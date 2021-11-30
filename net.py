@@ -51,10 +51,10 @@ class PolicyNetwork(torch.nn.Module):
 
         if mean.ndim > 1:
             mean[:, 0] = torch.tanh(mean[:, 0])
-            mean[:, 1] = torch.tanh(mean[:, 1]) * 0.01
+            mean[:, 1] = torch.tanh(mean[:, 1]) * 0.1
         else:
             mean[0] = torch.tanh(mean[0])
-            mean[1] = torch.tanh(mean[0]) * 0.01
+            mean[1] = torch.tanh(mean[0]) * 0.1
 
         cov_mtx = torch.FloatTensor([[5e-2, 0], [0, 25e-4]])
 
@@ -79,6 +79,8 @@ class ValueNetwork(torch.nn.Module):
             torch.nn.Linear(64, 128),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
+            torch.nn.Linear(128, 128),
+            torch.nn.Tanh(),
             torch.nn.Linear(128, 256),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
@@ -129,6 +131,8 @@ class Discriminator(torch.nn.Module):
             torch.nn.Linear(64, 128),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
+            torch.nn.Linear(128, 128),
+            torch.nn.Tanh(),
             torch.nn.Linear(128, 256),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),

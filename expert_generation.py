@@ -48,8 +48,9 @@ def cal_action(obs, obs_next, dt=0.1):
 
 
 def main(scenario):
-    dataset_name = 'expert_simple.pkl' # [tan(heading), speed, x, y, l, h, ....]
-    dataset_name = 'expert_simple_2.pkl' # [heading, speed, x, y, l, h, ....]
+    # dataset_name = 'expert_simple.pkl' # [tan(heading), speed, x, y, l, h, ....]
+    # dataset_name = 'expert_simple_2.pkl' # [heading, speed, x, y, l, h, ....]
+    dataset_name = 'expert_simple_3.pkl'  # [heading, speed, x, y, l, h, ....(10 neighbor)]
     """Collect expert observations.
 
     Each input scenario is associated with some trajectory files. These trajectories
@@ -121,7 +122,7 @@ def main(scenario):
         obs, _, _, dones = smarts.observe_from(
             smarts.vehicle_index.social_vehicle_ids()
         )
-        pdb.set_trace()
+        # pdb.set_trace()
 
         if done_vehicles:
             ts = time.time() - t

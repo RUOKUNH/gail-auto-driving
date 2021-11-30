@@ -2,6 +2,48 @@ import numpy as np
 import torch as torch
 
 
+def clip(x, low, high):
+    if x < low:
+        return low
+    if x > high:
+        return high
+    return x
+
+def conjugate_gradient(Av_func, b, max_iter=50, residual_tol=1e-10):
+    x = torch.zeros_like(b)
+    r = b - Av_func(x)
+    p = r
+    rsold = r.norm() ** 2  # 2-norm
+
+    for _ in range(max_iter):
+        Ap = Av_func(p)
+        alpha = rsold / torch.dot(p, Ap)
+        x = x + alpha * p
+        r = r - alpha * Ap
+        rsnew = r.norm() ** 2
+        if torch.sqrt(rsnew) < residual_tol:
+            break
+        p = r + (rsnew / rsold) * p
+        rsold = rsnew
+
+    return x
+
+
+# only available for gaussian distributions
+# refer https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#
+# As the cov mat is diag, so some operations like trace and inverse is achieved by sumation
+def kl_divergence(dist, old_dist, action_dim):
+    old_mean = old_dist.mean.detach()
+    old_cov = old_dist.covariance_matrix.sum(-1).detach()
+    mean = dist.mean
+    cov = dist.covariance_matrix.sum(-1)
+    return 0.5 * ((old_cov / cov).sum(-1)
+                  + (((old_mean - mean) ** 2) / cov).sum(-1)
+                  - action_dim
+                  + torch.log(cov).sum(-1)
+                  - torch.log(old_cov).sum(-1)).mean()
+
+
 def get_flat_grads(f, net):
     flat_grads = torch.cat([
         grad.view(-1)

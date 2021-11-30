@@ -4,6 +4,7 @@ from traffic_simulator import TrafficSim
 from gail import GAIL
 import torch
 import argparse
+from gail_ppo import GAIL_PPO
 
 
 def main(args):
@@ -12,12 +13,15 @@ def main(args):
         config = json.load(f)
 
     # env = TrafficSim(["./scenarios/ngsim"])
-    env = TrafficSim(["./ngsim"])
-    print('env created')
+    # env = TrafficSim(["./ngsim"])
+    # print('env created')
+    state_dim = 20
+    action_dim = 2
 
-    model = GAIL(20, 2, config, args)
+    # model = GAIL(state_dim, action_dim, config, args)
+    model = GAIL_PPO(state_dim, action_dim, config, args)
 
-    pi, v, d = model.train(env, expert_path)
+    pi, v, d = model.train(expert_path)
     #
     # state = {'action_net': pi.state_dict(),
     #          'value_net': v.state_dict(),

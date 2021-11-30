@@ -19,7 +19,7 @@ def get_action_adapter():
 
 
 class TrafficSim:
-    def __init__(self, scenarios):
+    def __init__(self, scenarios, envision=True):
         self.scenarios_iterator = Scenario.scenario_variations(scenarios, [])
         self._init_scenario()
         self.obs_stacked_size = 1
@@ -35,14 +35,19 @@ class TrafficSim:
             ),
             action_adapter=get_action_adapter(),
         )
-
-        self.smarts = SMARTS(
-            agent_interfaces={},
-            traffic_sim=None,
-            envision=EnvisionClient(
-                sim_name='single_agent',
-                ),
-        )
+        if envision:
+            self.smarts = SMARTS(
+                agent_interfaces={},
+                traffic_sim=None,
+                envision=EnvisionClient(
+                    sim_name='single_agent',
+                    ),
+            )
+        else:
+            self.smarts = SMARTS(
+                agent_interfaces={},
+                traffic_sim=None,
+            )
 
     def seed(self, seed):
         np.random.seed(seed)

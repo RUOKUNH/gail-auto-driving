@@ -1,0 +1,7 @@
+{
+  "train_iter": 10000,
+  "max_step": 200,
+  "lambda_": 0.001,
+  "gamma": 0.99,
+  "kld_thre": 0.1
+}
