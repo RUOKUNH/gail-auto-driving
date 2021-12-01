@@ -8,7 +8,7 @@ from ppo import PPO
 import matplotlib.pyplot as plt
 import pickle as pkl
 import random
-from tqdm import trange, tqdm
+# from tqdm import trange, tqdm
 import time
 import os
 import torch.nn.functional as F
@@ -200,12 +200,12 @@ class GAIL_PPO:
                 generation_act += acts2[i]
             generation_obs = FloatTensor(generation_obs)
             generation_act = FloatTensor(generation_act)
-            expert_sample_idx = np.random.randint(0, len(train_buffer), 10)
+            expert_sample_idx = np.random.randint(0, len(train_buffer[0]), 10)
             expert_obs = []
             expert_act = []
             for i in expert_sample_idx:
-                expert_obs += train_buffer[i][0]
-                expert_act += train_buffer[i][1]
+                expert_obs += train_buffer[0][i]
+                expert_act += train_buffer[1][i]
             expert_obs = FloatTensor(expert_obs)
             expert_act = FloatTensor(expert_act)
             exp_scores = self.d(expert_obs, expert_act)

@@ -8,7 +8,7 @@ from trpo import TRPO
 import matplotlib.pyplot as plt
 import pickle as pkl
 import random
-from tqdm import trange, tqdm
+# from tqdm import trange, tqdm
 import time
 import os
 import torch.nn.functional as F
