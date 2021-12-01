@@ -19,7 +19,6 @@ class PPO:
         self.config = config
 
     def L_clip(self, advs, ratio, epsilon=0.2):
-        # pdb.set_trace()
         rated_advs = 0
         for i in range(len(advs)):
             rated_advs += min(ratio[i]*advs[i], clip(ratio[i], 1-epsilon, 1+epsilon)*advs[i])
@@ -36,9 +35,7 @@ class PPO:
             ob = obs[i]
             if len(ob) <= self.n_step:
                 continue
-            # ob = ob[:len(ob)-self.n_step]
             act = acts[i]
-            # pdb.set_trace()
             ob, act = FloatTensor(ob), FloatTensor(act)
             costs = torch.log(dnet(ob, act)).squeeze().detach()
             rwds = -1 * costs
@@ -66,12 +63,10 @@ class PPO:
                 _acts.append(_act)
                 _advs.append(_adv)
             _obs, _acts = FloatTensor(_obs), FloatTensor(_acts)
-            # pdb.set_trace()
             dist = self.pnet(_obs)
             old_dist = self.collect_pnet(_obs)
             _ratio = torch.exp(dist.log_prob(_acts)
                                - old_dist.log_prob(_acts).detach())
-            # pdb.set_trace()
             loss = self.L_clip(_advs, _ratio)
             # dist_causal_entropy = self.config['lambda_'] * (-1 * self.pnet(_obs).log_prob(_acts)).mean()
             # loss -= dist_causal_entropy

@@ -78,11 +78,6 @@ class GAIL_PPO:
     #     self.collector_lock.release()
 
     def train(self, expert_path, render=False):
-        # envs = []
-        # for i in range(self.collectors):
-        #     env = TrafficSim(["./ngsim"])
-        #     envs.append(env)
-        #     print(f'env {i} created')
         env = TrafficSim(["./ngsim"], envision=False)
         print('env created')
         if self.args.con:
@@ -132,15 +127,6 @@ class GAIL_PPO:
             gammas2 = []
             speeds = []
             _step = 0
-            # threads = []
-            # for i in range(self.collectors):
-            #     th = threading.Thread(target=self.collect,
-            #         args=(obs2, acts2, rwds2, gammas2, _step, speeds, envs[i], max_step, self.pi, gamma))
-            #     threads.append(th)
-            # for th in threads:
-            #     th.start()
-            # for th in threads:
-            #     th.join()
             for i in range(self.collectors):
                 obs1 = []
                 acts1 = []
@@ -212,7 +198,6 @@ class GAIL_PPO:
                 # TD-update Value net
                 self.d.eval()
                 costs = torch.log(self.d(obs, acts)).squeeze().detach()
-                # costs += speed_penalty
                 esti_rwds = -1 * costs
 
                 self.v.train()
@@ -220,7 +205,7 @@ class GAIL_PPO:
                 td_v = esti_rwds[:-1] + gamma * esti_v[1:]
                 loss_v = F.mse_loss(esti_v[:-1], td_v)
                 opt_v.zero_grad()
-                loss_v.backward(retain_graph=True)
+                loss_v.backward()
                 opt_v.step()
 
             t2 = time.time() - t
