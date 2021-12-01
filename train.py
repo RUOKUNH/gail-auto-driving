@@ -8,6 +8,7 @@ from gail_ppo import GAIL_PPO
 
 
 def main(args):
+    # expert_path = '../expert_simple_2.pkl'
     expert_path = './expert_simple_2.pkl'
     with open('config.json') as f:
         config = json.load(f)

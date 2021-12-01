@@ -1,3 +1,4 @@
+import pdb
 import numpy as np
 import random
 from dataclasses import replace
@@ -21,6 +22,7 @@ def get_action_adapter():
 
 class TrafficSim:
     def __init__(self, scenarios, envision=True, collectors=1):
+        self.collectors = collectors
         self.scenarios_iterator = Scenario.scenario_variations(scenarios, [])
         self._init_scenario()
         self.obs_stacked_size = 1
@@ -37,7 +39,7 @@ class TrafficSim:
             action_adapter=get_action_adapter(),
         )
         self.smarts = []
-        self.collectors = collectors
+        self.vehicle_id = [0] * self.collectors
         for i in range(collectors):
             if envision:
                 self.smarts.append(SMARTS(
@@ -52,6 +54,7 @@ class TrafficSim:
                     agent_interfaces={},
                     traffic_sim=None,
                 ))
+            print(f'env {i} created')
 
     def seed(self, seed):
         np.random.seed(seed)
@@ -59,23 +62,23 @@ class TrafficSim:
     def step(self, action, smart_id=0):
 
         observations, rewards, dones, _ = self.smarts[smart_id].step(
-            {self.vehicle_id: self.agent_spec.action_adapter(action)}
+            {self.vehicle_id[smart_id]: self.agent_spec.action_adapter(action)}
         )
 
         return (
-            observations[self.vehicle_id],
-            rewards[self.vehicle_id],
-            dones[self.vehicle_id],
+            observations[self.vehicle_id[smart_id]],
+            rewards[self.vehicle_id[smart_id]],
+            dones[self.vehicle_id[smart_id]],
             {},
         )
 
     def reset(self, smart_id=0):
-        self.vehicle_itr = random.randint(0, len(self.vehicle_ids)-1)
+        vehicle_itr = random.randint(0, len(self.vehicle_ids[smart_id])-1)
         # if self.vehicle_itr >= len(self.vehicle_ids):
         #     self.vehicle_itr = 0
 
-        self.vehicle_id = self.vehicle_ids[self.vehicle_itr]
-        vehicle_mission = self.vehicle_missions[self.vehicle_id]
+        self.vehicle_id[smart_id] = self.vehicle_ids[smart_id][vehicle_itr]
+        vehicle_mission = self.vehicle_missions[smart_id][self.vehicle_id[smart_id]]
 
         traffic_history_provider = self.smarts[smart_id].get_provider_by_type(
             TrafficHistoryProvider
@@ -84,19 +87,24 @@ class TrafficSim:
         traffic_history_provider.start_time = vehicle_mission.start_time
 
         modified_mission = replace(vehicle_mission, start_time=0.0)
-        self.scenario.set_ego_missions({self.vehicle_id: modified_mission})
-        self.smarts[smart_id].switch_ego_agents({self.vehicle_id: self.agent_spec.interface})
+        self.scenarios[smart_id].set_ego_missions({self.vehicle_id[smart_id]: modified_mission})
+        self.smarts[smart_id].switch_ego_agents({self.vehicle_id[smart_id]: self.agent_spec.interface})
 
-        observations = self.smarts[smart_id].reset(self.scenario)
+        observations = self.smarts[smart_id].reset(self.scenarios[smart_id])
         # self.vehicle_itr += 1
-        return observations[self.vehicle_id]
+        return observations[self.vehicle_id[smart_id]]
 
     def _init_scenario(self):
-        self.scenario = next(self.scenarios_iterator)
-        self.vehicle_missions = self.scenario.discover_missions_of_traffic_histories()
-        self.vehicle_ids = list(self.vehicle_missions.keys())
-        np.random.shuffle(self.vehicle_ids)
-        self.vehicle_itr = 0
+        # pdb.set_trace()
+        self.scenarios = []
+        self.vehicle_missions = []
+        self.vehicle_ids = []
+        for i in range(self.collectors):
+            self.scenarios.append(next(self.scenarios_iterator))
+            self.vehicle_missions.append(self.scenarios[i].discover_missions_of_traffic_histories())
+            self.vehicle_ids.append(list(self.vehicle_missions[i].keys()))
+            np.random.shuffle(self.vehicle_ids[i])
+            print(f'scenario {i} created')
 
     def destroy(self):
         for i in range(self.collectors):

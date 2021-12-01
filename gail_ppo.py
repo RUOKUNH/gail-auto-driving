@@ -45,7 +45,7 @@ class GAIL_PPO:
         gammas1 = []
         speed = []
         step = 0
-        ob = self.env.reset(smart_id=env_id)
+        ob = self.env.reset(env_id)
         done = False
         while step < max_step and not done:
             ob = make_obs(ob)
@@ -69,13 +69,13 @@ class GAIL_PPO:
         acts.append(acts1)
         rwds.append(np.sum(rwds1))
         gammas.append(gammas1)
-        steps += step
+        steps[0] += step
         speeds += speed
         self.collector_lock.release()
 
     def train(self, expert_path, render=False):
+        # self.env = TrafficSim(["../scenarios/ngsim"], envision=False, collectors=self.collectors)
         self.env = TrafficSim(["./ngsim"], envision=False, collectors=self.collectors)
-        print('env created')
         if self.args.con:
             model = torch.load('model' + self.args.exp + '.pth')
             self.pi.load_state_dict(model['action_net'])
@@ -126,7 +126,7 @@ class GAIL_PPO:
             rwds2 = []
             gammas2 = []
             speeds = []
-            _step = 0
+            _step = [0]
             # for i in range(self.collectors):
             #     obs1 = []
             #     acts1 = []
@@ -159,13 +159,16 @@ class GAIL_PPO:
             #     _step += step
             collect_threads = []
             for i in range(self.collectors):
-                th = threading.Thread(target=self.collectors,
-                    args=(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma))
+                # init_ob = self.env.reset(i)
+                th = threading.Thread(target=self.collect,
+                args=(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma))
                 collect_threads.append(th)
             for th in collect_threads:
                 th.start()
             for th in collect_threads:
                 th.join()
+            # for i in range(self.collectors):
+            #     self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma)
             t1 = time.time() - t
             t = time.time()
 
@@ -179,7 +182,7 @@ class GAIL_PPO:
                 train_buffer[1].pop(pop_idx)
             expert_ratio = beta ** (_iter - 1)
             expert_samples = int(np.ceil(10 * expert_ratio))
-            generation_samples = 10 - expert_samples
+            generation_samples = min(10 - expert_samples, self.collectors)
             for i in range(expert_samples):
                 sample = expert_buffer[batch_idx]
                 exp_obs = sample['observation']
@@ -273,13 +276,13 @@ class GAIL_PPO:
             t = time.time()
 
             print(
-                f"{self.args.exp}, reward at iter {_iter}: step{_step}, ",
+                f"{self.args.exp}, reward at iter {_iter}: step{_step[0]}, ",
                 "score: %.2f, m_speed: %.2f" % (score_list[-1], np.mean(speeds)),
                 "time: %.2f, %.2f, %.2f" % (t1, t2, t3),
                 "d_loss %.3f, v_loss %.3f" % (loss_d, loss_v)
             )
 
-            if _iter % 100 == 0:
+            if _iter % 50 == 0:
                 plt.plot(np.arange(len(score_list)), score_list)
                 plt.savefig('rwd' + self.args.exp + '.png')
                 plt.close()
