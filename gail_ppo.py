@@ -1,14 +1,10 @@
 import pdb
-
-import torch
-
 from utils import *
 from net import *
 from ppo import PPO
 import matplotlib.pyplot as plt
 import pickle as pkl
 import random
-# from tqdm import trange, tqdm
 import time
 import os
 import torch.nn.functional as F
@@ -42,43 +38,43 @@ class GAIL_PPO:
 
         self.collector_lock = Lock()
 
-    # def collect(self, obs, acts, rwds, gammas, steps, speeds, env, max_step, pnet, gamma):
-    #     obs1 = []
-    #     acts1 = []
-    #     rwds1 = []
-    #     gammas1 = []
-    #     speed = []
-    #     step = 0
-    #     ob = env.reset()
-    #     done = False
-    #     while step < max_step and not done:
-    #         ob = make_obs(ob)
-    #         ob = make_obs_2(ob)
-    #         speed.append(ob[1])
-    #         act = pnet(ob).sample()
-    #         act = list(act.cpu().numpy())
-    #
-    #         obs1.append(ob)
-    #         acts1.append(act)
-    #
-    #         ob, r, done, _ = env.step(act)
-    #
-    #         rwds1.append(r)  # real rewards, not used to train
-    #         gammas1.append(gamma ** step)
-    #
-    #         step += 1
-    #
-    #     self.collector_lock.acquire()
-    #     obs.append(obs1)
-    #     acts.append(acts1)
-    #     rwds.append(np.sum(rwds1))
-    #     gammas.append(gammas1)
-    #     steps += step
-    #     speeds += speed
-    #     self.collector_lock.release()
+    def collect(self, obs, acts, rwds, gammas, steps, speeds, env_id, max_step, pnet, gamma):
+        obs1 = []
+        acts1 = []
+        rwds1 = []
+        gammas1 = []
+        speed = []
+        step = 0
+        ob = self.env.reset(smart_id=env_id)
+        done = False
+        while step < max_step and not done:
+            ob = make_obs(ob)
+            ob = make_obs_2(ob)
+            speed.append(ob[1])
+            act = pnet(ob).sample()
+            act = list(act.cpu().numpy())
+
+            obs1.append(ob)
+            acts1.append(act)
+
+            ob, r, done, _ = self.env.step(act, smart_id=env_id)
+
+            rwds1.append(r)  # real rewards, not used to train
+            gammas1.append(gamma ** step)
+
+            step += 1
+
+        self.collector_lock.acquire()
+        obs.append(obs1)
+        acts.append(acts1)
+        rwds.append(np.sum(rwds1))
+        gammas.append(gammas1)
+        steps += step
+        speeds += speed
+        self.collector_lock.release()
 
     def train(self, expert_path, render=False):
-        env = TrafficSim(["./ngsim"], envision=False)
+        self.env = TrafficSim(["./ngsim"], envision=False, collectors=self.collectors)
         print('env created')
         if self.args.con:
             model = torch.load('model' + self.args.exp + '.pth')
@@ -131,36 +127,45 @@ class GAIL_PPO:
             gammas2 = []
             speeds = []
             _step = 0
+            # for i in range(self.collectors):
+            #     obs1 = []
+            #     acts1 = []
+            #     rwds1 = []
+            #     gammas1 = []
+            #     step = 0
+            #     ob = env.reset()
+            #     done = False
+            #     while step < max_step and not done:
+            #         ob = make_obs(ob)
+            #         ob = make_obs_2(ob)
+            #         speeds.append(ob[1])
+            #         act = self.pi(ob).sample()
+            #         act = list(act.cpu().numpy())
+            #
+            #         obs1.append(ob)
+            #         acts1.append(act)
+            #
+            #         ob, r, done, _ = env.step(act)
+            #
+            #         rwds1.append(r)  # real rewards, not used to train
+            #         gammas1.append(gamma ** step)
+            #
+            #         step += 1
+            #
+            #     obs2.append(obs1)
+            #     acts2.append(acts1)
+            #     rwds2.append(np.sum(rwds1))
+            #     gammas2.append(gammas1)
+            #     _step += step
+            collect_threads = []
             for i in range(self.collectors):
-                obs1 = []
-                acts1 = []
-                rwds1 = []
-                gammas1 = []
-                step = 0
-                ob = env.reset()
-                done = False
-                while step < max_step and not done:
-                    ob = make_obs(ob)
-                    ob = make_obs_2(ob)
-                    speeds.append(ob[1])
-                    act = self.pi(ob).sample()
-                    act = list(act.cpu().numpy())
-
-                    obs1.append(ob)
-                    acts1.append(act)
-
-                    ob, r, done, _ = env.step(act)
-
-                    rwds1.append(r)  # real rewards, not used to train
-                    gammas1.append(gamma ** step)
-
-                    step += 1
-
-                obs2.append(obs1)
-                acts2.append(acts1)
-                rwds2.append(np.sum(rwds1))
-                gammas2.append(gammas1)
-                _step += step
+                th = threading.Thread(target=self.collectors,
+                    args=(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma))
+                collect_threads.append(th)
+            for th in collect_threads:
+                th.start()
+            for th in collect_threads:
+                th.join()
             t1 = time.time() - t
             t = time.time()
 
@@ -204,7 +209,7 @@ class GAIL_PPO:
             expert_obs = []
             expert_act = []
             for i in expert_sample_idx:
-                pdb.set_trace()
+                # pdb.set_trace()
                 expert_obs += train_buffer[0][i]
                 expert_act += list(train_buffer[1][i])
             expert_obs = FloatTensor(expert_obs)
