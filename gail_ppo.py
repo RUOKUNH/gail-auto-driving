@@ -102,7 +102,7 @@ class GAIL_PPO:
 
         expert_buffer = []
         # obs, act
-        train_buffer = ([],[])
+        train_buffer = ([], [])
         max_train_buffer = 2000
         beta = 0.99
         pkf = open(expert_path, 'rb')
@@ -204,8 +204,9 @@ class GAIL_PPO:
             expert_obs = []
             expert_act = []
             for i in expert_sample_idx:
+                pdb.set_trace()
                 expert_obs += train_buffer[0][i]
-                expert_act += train_buffer[1][i]
+                expert_act += list(train_buffer[1][i])
             expert_obs = FloatTensor(expert_obs)
             expert_act = FloatTensor(expert_act)
             exp_scores = self.d(expert_obs, expert_act)
