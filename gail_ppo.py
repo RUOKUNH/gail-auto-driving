@@ -101,6 +101,10 @@ class GAIL_PPO:
         opt_v = torch.optim.Adam(self.v.parameters())
 
         expert_buffer = []
+        # obs, act
+        train_buffer = ([],[])
+        max_train_buffer = 2000
+        beta = 0.99
         pkf = open(expert_path, 'rb')
         while True:
             try:
@@ -162,51 +166,96 @@ class GAIL_PPO:
 
             score_list.append(np.mean(rwds2))
 
-            # Get expert data batch
-            if batch_idx + batch_size - 1 > len(expert_buffer):
-                batch_buffer = expert_buffer[batch_idx:]
-                batch_idx = 0
-            else:
-                batch_buffer = expert_buffer[batch_idx:batch_idx + batch_size]
-                batch_idx += batch_size
+            # Dagger get train data for discriminator
+            # Update Dnet
+            while len(train_buffer[0]) >= max_train_buffer:
+                pop_idx = random.randint(0, len(train_buffer[0])-1)
+                train_buffer[0].pop(pop_idx)
+                train_buffer[1].pop(pop_idx)
+            expert_ratio = beta ** (_iter - 1)
+            expert_samples = int(np.ceil(10 * expert_ratio))
+            generation_samples = 10 - expert_samples
+            for i in range(expert_samples):
+                sample = expert_buffer[batch_idx]
+                exp_obs = sample['observation']
+                exp_obs = [make_obs_2(ob) for ob in exp_obs]
+                train_buffer[0].append(exp_obs)
+                train_buffer[1].append(sample['actions'])
+                batch_idx += 1
+                if batch_idx >= len(expert_buffer):
+                    batch_idx = 0
+            for i in range(generation_samples):
+                train_buffer[0].append(obs2[i])
+                train_buffer[1].append(acts2[i])
+            # if batch_idx + batch_size - 1 > len(expert_buffer):
+            #     batch_buffer = expert_buffer[batch_idx:]
+            #     batch_idx = 0
+            # else:
+            #     batch_buffer = expert_buffer[batch_idx:batch_idx + batch_size]
+            #     batch_idx += batch_size
+            generation_obs = []
+            generation_act = []
             for i in range(self.collectors):
-                obs, acts, gammas = obs2[i], acts2[i], gammas2[i]
-                obs, acts, gammas = FloatTensor(obs), FloatTensor(acts), FloatTensor(gammas)
-                for record in batch_buffer:
-                    # update D net
-                    self.d.train()
-                    exp_obs = record['observation']
-                    exp_acts = record['actions']
-                    exp_obs = [make_obs_2(ob) for ob in exp_obs]
-                    exp_obs = FloatTensor(exp_obs)
-                    exp_acts = FloatTensor(exp_acts)
+                generation_obs += obs2[i]
+                generation_act += acts2[i]
+            generation_obs = FloatTensor(generation_obs)
+            generation_act = FloatTensor(generation_act)
+            expert_sample_idx = np.random.randint(0, len(train_buffer), 10)
+            expert_obs = []
+            expert_act = []
+            for i in expert_sample_idx:
+                expert_obs += train_buffer[i][0]
+                expert_act += train_buffer[i][1]
+            expert_obs = FloatTensor(expert_obs)
+            expert_act = FloatTensor(expert_act)
+            exp_scores = self.d(expert_obs, expert_act)
+            gen_scores = self.d(generation_obs, generation_act)
+            loss_d = torch.nn.functional.binary_cross_entropy(
+                exp_scores, torch.zeros_like(exp_scores)
+            ) + torch.nn.functional.binary_cross_entropy(
+                gen_scores, torch.ones_like(gen_scores)
+            )
+            opt_d.zero_grad()
+            loss_d.backward()
+            opt_d.step()
+            # for i in range(self.collectors):
+            #     obs, acts, gammas = obs2[i], acts2[i], gammas2[i]
+            #     obs, acts, gammas = FloatTensor(obs), FloatTensor(acts), FloatTensor(gammas)
+            #     # update D net
+            #     for record in batch_buffer:
+            #         self.d.train()
+            #         exp_obs = record['observation']
+            #         exp_acts = record['actions']
+            #         exp_obs = [make_obs_2(ob) for ob in exp_obs]
+            #         exp_obs = FloatTensor(exp_obs)
+            #         exp_acts = FloatTensor(exp_acts)
+            #
+            #         # score expert close to 0
+            #         exp_scores = self.d(exp_obs, exp_acts)
+            #         # score generator close to 1
+            #         gen_scores = self.d(obs, acts)
+            #
+            #         loss_d = torch.nn.functional.binary_cross_entropy(
+            #             exp_scores, torch.zeros_like(exp_scores)
+            #         ) + torch.nn.functional.binary_cross_entropy(
+            #             gen_scores, torch.ones_like(gen_scores)
+            #         )
+            #         opt_d.zero_grad()
+            #         loss_d.backward()
+            #         opt_d.step()
 
-                    # score expert close to 0
-                    exp_scores = self.d(exp_obs, exp_acts)
-                    # score generator close to 1
-                    gen_scores = self.d(obs, acts)
+            # TD-update Value net
+            self.d.eval()
+            costs = torch.log(self.d(generation_obs, generation_act)).squeeze().detach()
+            esti_rwds = -1 * costs
 
-                    loss_d = torch.nn.functional.binary_cross_entropy(
-                        exp_scores, torch.zeros_like(exp_scores)
-                    ) + torch.nn.functional.binary_cross_entropy(
-                        gen_scores, torch.ones_like(gen_scores)
-                    )
-                    opt_d.zero_grad()
-                    loss_d.backward()
-                    opt_d.step()
-
-                # TD-update Value net
-                self.d.eval()
-                costs = torch.log(self.d(obs, acts)).squeeze().detach()
-                esti_rwds = -1 * costs
-
-                self.v.train()
-                esti_v = self.v(obs).view(-1)
-                td_v = esti_rwds[:-1] + gamma * esti_v[1:]
-                loss_v = F.mse_loss(esti_v[:-1], td_v)
-                opt_v.zero_grad()
-                loss_v.backward()
-                opt_v.step()
+            self.v.train()
+            esti_v = self.v(generation_obs).view(-1)
+            td_v = esti_rwds[:-1] + gamma * esti_v[1:]
+            loss_v = F.mse_loss(esti_v[:-1], td_v)
+            opt_v.zero_grad()
+            loss_v.backward()
+            opt_v.step()
 
             t2 = time.time() - t
             t = time.time()
