@@ -73,11 +73,11 @@ class TrafficSim:
         )
 
     def reset(self, smart_id=0):
-        vehicle_itr = random.randint(0, len(self.vehicle_ids[smart_id])-1)
-        # if self.vehicle_itr >= len(self.vehicle_ids):
-        #     self.vehicle_itr = 0
+        # vehicle_itr = random.randint(0, len(self.vehicle_ids[smart_id])-1)
+        if self.vehicle_itr >= len(self.vehicle_ids[smart_id]):
+            self.vehicle_itr = 0
 
-        self.vehicle_id[smart_id] = self.vehicle_ids[smart_id][vehicle_itr]
+        self.vehicle_id[smart_id] = self.vehicle_ids[smart_id][self.vehicle_itr]
         vehicle_mission = self.vehicle_missions[smart_id][self.vehicle_id[smart_id]]
 
         traffic_history_provider = self.smarts[smart_id].get_provider_by_type(
@@ -91,11 +91,13 @@ class TrafficSim:
         self.smarts[smart_id].switch_ego_agents({self.vehicle_id[smart_id]: self.agent_spec.interface})
 
         observations = self.smarts[smart_id].reset(self.scenarios[smart_id])
-        # self.vehicle_itr += 1
+        self.vehicle_itr += 1
+        print(self.vehicle_id[smart_id])
         return observations[self.vehicle_id[smart_id]]
 
     def _init_scenario(self):
         # pdb.set_trace()
+        self.vehicle_itr = 0
         self.scenarios = []
         self.vehicle_missions = []
         self.vehicle_ids = []

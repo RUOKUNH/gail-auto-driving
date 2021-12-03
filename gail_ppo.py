@@ -59,7 +59,7 @@ class GAIL_PPO:
 
             ob, r, done, _ = self.env.step(act)
 
-            rwds1.append(r)  # real rewards, not used to train
+            rwds1.append(r)
             gammas1.append(gamma ** step)
 
             step += 1
@@ -67,13 +67,14 @@ class GAIL_PPO:
         # self.collector_lock.acquire()
         obs.append(obs1)
         acts.append(acts1)
-        rwds.append(np.sum(rwds1))
+        rwds.append(rwds1)
         gammas.append(gammas1)
         steps[0] += step
         speeds += speed
         # self.collector_lock.release()
 
     def train(self, expert_path, render=False):
+        best_score = -np.inf
         # self.env = TrafficSim(["../scenarios/ngsim"], envision=False, collectors=self.collectors)
         self.env = TrafficSim(["./ngsim"], envision=False)
         if self.args.con:
@@ -144,7 +145,12 @@ class GAIL_PPO:
             t1 = time.time() - t
             t = time.time()
 
-            score_list += rwds2
+            score_list += [np.sum(rwd) for rwd in rwds2]
+
+            for rwd in rwds2:
+                rwd = np.array(rwd)
+                last_steps = min(20, len(rwd))
+                rwd[-last_steps:] -= np.linspace(0, np.sqrt(5), last_steps)**2
 
             # Dagger get train data for discriminator
             # Update Dnet
@@ -168,10 +174,10 @@ class GAIL_PPO:
             for i in range(self.collectors):
                 if sample_count == generation_samples:
                     break
-                if rwds2[i] > 200:
-                    train_buffer[0].append(obs2[i])
-                    train_buffer[1].append(acts2[i])
-                    sample_count += 1
+                # if rwds2[i] > 200:
+                train_buffer[0].append(obs2[i])
+                train_buffer[1].append(acts2[i])
+                sample_count += 1
             generation_obs = []
             generation_act = []
             for i in range(self.collectors):
@@ -179,6 +185,7 @@ class GAIL_PPO:
                 generation_act += acts2[i]
             generation_obs = FloatTensor(generation_obs)
             generation_act = FloatTensor(generation_act)
+            generation_rwd = np.concatenate(rwds2)
             expert_sample_idx = np.random.randint(0, len(train_buffer[0]), 10)
             expert_obs = []
             expert_act = []
@@ -227,7 +234,8 @@ class GAIL_PPO:
             # TD-update Value net
             self.d.eval()
             costs = torch.log(self.d(generation_obs, generation_act)+1e-8).squeeze().detach()
-            esti_rwds = -1 * costs
+            # esti_rwds = -1 * costs
+            esti_rwds = -0.8 * costs + 0.2 * generation_rwd
 
             self.v.train()
             esti_v = self.v(generation_obs).view(-1)
@@ -253,10 +261,17 @@ class GAIL_PPO:
                 "d_loss %.3f, v_loss %.3f" % (loss_d, loss_v)
             )
 
+            plt.plot(np.arange(len(score_list)), score_list)
+            plt.savefig('rwd' + self.args.exp + '.png')
+            plt.close()
+            if np.mean(score_list[-self.collectors:]) > best_score:
+                best_score = np.mean(score_list[-self.collectors:])
+                state = {'action_net': self.ppo.get_pnet().state_dict(),
+                         'value_net': self.v.state_dict(),
+                         'disc_net': self.d.state_dict()}
+                torch.save(state, 'bestmodel' + self.args.exp + '.pth')
+
             if _iter % 50 == 0:
-                plt.plot(np.arange(len(score_list)), score_list)
-                plt.savefig('rwd' + self.args.exp + '.png')
-                plt.close()
                 state = {'action_net': self.ppo.get_pnet().state_dict(),
                          'value_net': self.v.state_dict(),
                          'disc_net': self.d.state_dict()}
