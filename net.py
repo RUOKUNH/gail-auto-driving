@@ -18,11 +18,11 @@ class PolicyNetwork(torch.nn.Module):
     def __init__(self, state_dim, action_dim):
         super(PolicyNetwork, self).__init__()
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(state_dim, 32),
+            torch.nn.Linear(state_dim, 64),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(32, 64),
-            torch.nn.Tanh(),
+            # torch.nn.Linear(32, 64),
+            # torch.nn.Tanh(),
             # torch.nn.ReLU(),
             torch.nn.Linear(64, 64),
             torch.nn.Tanh(),
@@ -67,11 +67,11 @@ class ValueNetwork(torch.nn.Module):
     def __init__(self, state_dim):
         super(ValueNetwork, self).__init__()
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(state_dim, 32),
+            torch.nn.Linear(state_dim, 64),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(32, 64),
-            torch.nn.Tanh(),
+            # torch.nn.Linear(32, 64),
+            # torch.nn.Tanh(),
             # torch.nn.ReLU(),
             torch.nn.Linear(64, 64),
             torch.nn.Tanh(),
@@ -79,8 +79,8 @@ class ValueNetwork(torch.nn.Module):
             torch.nn.Linear(64, 128),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(128, 128),
-            torch.nn.Tanh(),
+            # torch.nn.Linear(128, 128),
+            # torch.nn.Tanh(),
             torch.nn.Linear(128, 256),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
@@ -119,11 +119,11 @@ class Discriminator(torch.nn.Module):
         self.net_in_dim = state_dim + action_dim
 
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(self.net_in_dim, 32),
+            torch.nn.Linear(self.net_in_dim, 64),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(32, 64),
-            torch.nn.Tanh(),
+            # torch.nn.Linear(32, 64),
+            # torch.nn.Tanh(),
             # torch.nn.ReLU(),
             torch.nn.Linear(64, 64),
             torch.nn.Tanh(),
@@ -131,8 +131,8 @@ class Discriminator(torch.nn.Module):
             torch.nn.Linear(64, 128),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(128, 128),
-            torch.nn.Tanh(),
+            # torch.nn.Linear(128, 128),
+            # torch.nn.Tanh(),
             torch.nn.Linear(128, 256),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),

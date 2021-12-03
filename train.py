@@ -1,7 +1,7 @@
 import os
 import json
 from traffic_simulator import TrafficSim
-from gail import GAIL
+from gail_trpo import GAIL
 import torch
 import argparse
 from gail_ppo import GAIL_PPO
@@ -19,8 +19,10 @@ def main(args):
     state_dim = 20
     action_dim = 2
 
-    # model = GAIL(state_dim, action_dim, config, args)
-    model = GAIL_PPO(state_dim, action_dim, config, args)
+    if args.optim == 'trpo':
+        model = GAIL(state_dim, action_dim, config, args)
+    if args.optim == 'ppo':
+        model = GAIL_PPO(state_dim, action_dim, config, args)
 
     pi, v, d = model.train(expert_path)
     #
@@ -39,5 +41,7 @@ if __name__ == '__main__':
                         help='whether continue with the experiment',
                         default=False,
                         type=bool)
+    parser.add_argument('--optim',
+                        type=str)
     args = parser.parse_args()
     main(args)

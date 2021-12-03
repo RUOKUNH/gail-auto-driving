@@ -3,7 +3,7 @@ import json
 import pdb
 
 from traffic_simulator import TrafficSim
-from gail import GAIL
+from gail_trpo import GAIL
 import torch
 from net import *
 from utils import *
@@ -11,7 +11,7 @@ from torch import FloatTensor
 import argparse
 
 def main():
-    exp = 'exp20'
+    exp = 'exp22'
     env = TrafficSim(["scenarios/ngsim"])
     print('env created')
     state_dim = 20

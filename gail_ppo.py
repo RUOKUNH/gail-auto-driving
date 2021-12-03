@@ -38,14 +38,14 @@ class GAIL_PPO:
 
         self.collector_lock = Lock()
 
-    def collect(self, obs, acts, rwds, gammas, steps, speeds, env_id, max_step, pnet, gamma):
+    def collect(self, obs, acts, rwds, gammas, steps, speeds, max_step, pnet, gamma):
         obs1 = []
         acts1 = []
         rwds1 = []
         gammas1 = []
         speed = []
         step = 0
-        ob = self.env.reset(env_id)
+        ob = self.env.reset()
         done = False
         while step < max_step and not done:
             ob = make_obs(ob)
@@ -57,25 +57,25 @@ class GAIL_PPO:
             obs1.append(ob)
             acts1.append(act)
 
-            ob, r, done, _ = self.env.step(act, smart_id=env_id)
+            ob, r, done, _ = self.env.step(act)
 
             rwds1.append(r)  # real rewards, not used to train
             gammas1.append(gamma ** step)
 
             step += 1
 
-        self.collector_lock.acquire()
+        # self.collector_lock.acquire()
         obs.append(obs1)
         acts.append(acts1)
         rwds.append(np.sum(rwds1))
         gammas.append(gammas1)
         steps[0] += step
         speeds += speed
-        self.collector_lock.release()
+        # self.collector_lock.release()
 
     def train(self, expert_path, render=False):
         # self.env = TrafficSim(["../scenarios/ngsim"], envision=False, collectors=self.collectors)
-        self.env = TrafficSim(["./ngsim"], envision=False, collectors=self.collectors)
+        self.env = TrafficSim(["./ngsim"], envision=False)
         if self.args.con:
             model = torch.load('model' + self.args.exp + '.pth')
             self.pi.load_state_dict(model['action_net'])
@@ -100,7 +100,7 @@ class GAIL_PPO:
         # obs, act
         train_buffer = ([], [])
         max_train_buffer = 2000
-        beta = 0.99
+        beta = 0.995
         pkf = open(expert_path, 'rb')
         while True:
             try:
@@ -127,52 +127,24 @@ class GAIL_PPO:
             gammas2 = []
             speeds = []
             _step = [0]
+            # collect_threads = []
             # for i in range(self.collectors):
-            #     obs1 = []
-            #     acts1 = []
-            #     rwds1 = []
-            #     gammas1 = []
-            #     step = 0
-            #     ob = env.reset()
-            #     done = False
-            #     while step < max_step and not done:
-            #         ob = make_obs(ob)
-            #         ob = make_obs_2(ob)
-            #         speeds.append(ob[1])
-            #         act = self.pi(ob).sample()
-            #         act = list(act.cpu().numpy())
-            #
-            #         obs1.append(ob)
-            #         acts1.append(act)
-            #
-            #         ob, r, done, _ = env.step(act)
-            #
-            #         rwds1.append(r)  # real rewards, not used to train
-            #         gammas1.append(gamma ** step)
-            #
-            #         step += 1
-            #
-            #     obs2.append(obs1)
-            #     acts2.append(acts1)
-            #     rwds2.append(np.sum(rwds1))
-            #     gammas2.append(gammas1)
-            #     _step += step
-            collect_threads = []
-            for i in range(self.collectors):
-                # init_ob = self.env.reset(i)
-                th = threading.Thread(target=self.collect,
-                args=(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma))
-                collect_threads.append(th)
-            for th in collect_threads:
-                th.start()
-            for th in collect_threads:
-                th.join()
+            #     # init_ob = self.env.reset(i)
+            #     th = threading.Thread(target=self.collect,
+            #     args=(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma))
+            #     collect_threads.append(th)
+            # for th in collect_threads:
+            #     th.start()
+            # for th in collect_threads:
+            #     th.join()
             # for i in range(self.collectors):
             #     self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma)
+            for i in range(self.collectors):
+                self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.pi, gamma)
             t1 = time.time() - t
             t = time.time()
 
-            score_list.append(np.mean(rwds2))
+            score_list += rwds2
 
             # Dagger get train data for discriminator
             # Update Dnet
@@ -192,15 +164,14 @@ class GAIL_PPO:
                 batch_idx += 1
                 if batch_idx >= len(expert_buffer):
                     batch_idx = 0
-            for i in range(generation_samples):
-                train_buffer[0].append(obs2[i])
-                train_buffer[1].append(acts2[i])
-            # if batch_idx + batch_size - 1 > len(expert_buffer):
-            #     batch_buffer = expert_buffer[batch_idx:]
-            #     batch_idx = 0
-            # else:
-            #     batch_buffer = expert_buffer[batch_idx:batch_idx + batch_size]
-            #     batch_idx += batch_size
+            sample_count = 0
+            for i in range(self.collectors):
+                if sample_count == generation_samples:
+                    break
+                if rwds2[i] > 200:
+                    train_buffer[0].append(obs2[i])
+                    train_buffer[1].append(acts2[i])
+                    sample_count += 1
             generation_obs = []
             generation_act = []
             for i in range(self.collectors):
@@ -255,7 +226,7 @@ class GAIL_PPO:
 
             # TD-update Value net
             self.d.eval()
-            costs = torch.log(self.d(generation_obs, generation_act)).squeeze().detach()
+            costs = torch.log(self.d(generation_obs, generation_act)+1e-8).squeeze().detach()
             esti_rwds = -1 * costs
 
             self.v.train()
@@ -277,7 +248,7 @@ class GAIL_PPO:
 
             print(
                 f"{self.args.exp}, reward at iter {_iter}: step{_step[0]}, ",
-                "score: %.2f, m_speed: %.2f" % (score_list[-1], np.mean(speeds)),
+                "score: %.2f, %.2f, m_speed: %.2f" % (np.mean(score_list[-self.collectors:]), np.max(score_list[-self.collectors:]), np.mean(speeds)),
                 "time: %.2f, %.2f, %.2f" % (t1, t2, t3),
                 "d_loss %.3f, v_loss %.3f" % (loss_d, loss_v)
             )
@@ -290,13 +261,13 @@ class GAIL_PPO:
                          'value_net': self.v.state_dict(),
                          'disc_net': self.d.state_dict()}
                 torch.save(state, 'model' + self.args.exp + '.pth')
-                if not os.path.exists('scores.txt'):
+                if not os.path.exists(f'scores{self.args.exp}.txt'):
                     score_dict = {self.args.exp: score_list}
                 else:
-                    with open('scores.txt', 'rb') as pkf:
+                    with open(f'scores{self.args.exp}.txt', 'rb') as pkf:
                         score_dict = pkl.load(pkf)
                     score_dict[self.args.exp] = score_list
-                with open('scores.txt', 'wb') as pkf:
+                with open(f'scores{self.args.exp}.txt', 'wb') as pkf:
                     pkl.dump(score_dict, pkf)
 
             # except KeyboardInterrupt:

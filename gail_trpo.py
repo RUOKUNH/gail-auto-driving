@@ -12,6 +12,7 @@ import random
 import time
 import os
 import torch.nn.functional as F
+from traffic_simulator import TrafficSim
 
 
 class GAIL:
@@ -34,7 +35,8 @@ class GAIL:
         self.trpo = TRPO(train_config['kld_thre'], action_dim, state_dim)
         self.args = args
 
-    def train(self, env, expert_path, render=False):
+    def train(self, expert_path, render=False):
+        env = TrafficSim(["./ngsim"], envision=False)
         if self.args.con:
             model = torch.load('model' + self.args.exp + '.pth')
             self.pi.load_state_dict(model['action_net'])
@@ -55,6 +57,10 @@ class GAIL:
         opt_v = torch.optim.Adam(self.v.parameters())
 
         expert_buffer = []
+        # obs, act
+        train_buffer = ([], [])
+        max_train_buffer = 2000
+        beta = 0.99
         pkf = open(expert_path, 'rb')
         while True:
             try:
@@ -105,68 +111,67 @@ class GAIL:
                 t = time.time()
 
                 score_list.append(np.sum(rwds))
-                obs = FloatTensor(obs)
-                acts = FloatTensor(acts)
                 gammas = torch.FloatTensor(gammas)
 
-                # Get expert data batch
-                if batch_idx + batch_size - 1 > len(expert_buffer):
-                    batch_buffer = expert_buffer[batch_idx:]
-                    batch_idx = 0
-                else:
-                    batch_buffer = expert_buffer[batch_idx:batch_idx + batch_size]
-                    batch_idx += batch_size
-
-                for record in batch_buffer:
-                    # GT-update Value net
-                    self.d.eval()
-                    costs = torch.log(self.d(obs, acts)).squeeze().detach()
-                    # costs += speed_penalty
-                    esti_rwds = -1 * costs
-                    dist_rwds = esti_rwds * gammas
-                    gts = torch.FloatTensor([sum(dist_rwds[i:]) / gammas[i]
-                                             for i in range(dist_rwds.size()[0])])
-                    self.v.train()
-                    esti_v = self.v(obs).view(-1)
-                    # loss = torch.mean((gts - esti_v) ** 2)
-                    # opt_v.zero_grad()
-                    # loss.backward(retain_graph=True)
-                    # opt_v.step()
-
-                    # TD Update
-                    td_v = esti_rwds[:-1] + gamma * esti_v[1:]
-                    loss_v = F.mse_loss(esti_v[:-1], td_v)
-                    opt_v.zero_grad()
-                    loss_v.backward(retain_graph=True)
-                    opt_v.step()
-
-                    # update D net
-                    self.d.train()
-                    exp_obs = record['observation']
-                    exp_acts = record['actions']
+                # Dagger get train data for discriminator
+                # Update Dnet
+                while len(train_buffer[0]) >= max_train_buffer:
+                    pop_idx = random.randint(0, len(train_buffer[0]) - 1)
+                    train_buffer[0].pop(pop_idx)
+                    train_buffer[1].pop(pop_idx)
+                expert_ratio = beta ** (_iter - 1)
+                expert_samples = int(np.ceil(10 * expert_ratio))
+                for i in range(expert_samples):
+                    sample = expert_buffer[batch_idx]
+                    exp_obs = sample['observation']
                     exp_obs = [make_obs_2(ob) for ob in exp_obs]
-                    exp_obs = FloatTensor(exp_obs)
-                    # exp_obs = exp_obs[:, :6]
-                    # pdb.set_trace()
-                    exp_acts = FloatTensor(exp_acts)
+                    train_buffer[0].append(exp_obs)
+                    train_buffer[1].append(sample['actions'])
+                    batch_idx += 1
+                    if batch_idx >= len(expert_buffer):
+                        batch_idx = 0
+                if expert_samples < 10:
+                    train_buffer[0].append(obs)
+                    train_buffer[1].append(acts)
+                generation_obs = FloatTensor(obs)
+                generation_act = FloatTensor(acts)
+                expert_sample_idx = np.random.randint(0, len(train_buffer[0]), 10)
+                expert_obs = []
+                expert_act = []
+                for i in expert_sample_idx:
+                    expert_obs += train_buffer[0][i]
+                    expert_act += list(train_buffer[1][i])
+                expert_obs = FloatTensor(expert_obs)
+                expert_act = FloatTensor(expert_act)
+                exp_scores = self.d(expert_obs, expert_act)
+                gen_scores = self.d(generation_obs, generation_act)
+                loss_d = torch.nn.functional.binary_cross_entropy(
+                    exp_scores, torch.zeros_like(exp_scores)
+                ) + torch.nn.functional.binary_cross_entropy(
+                    gen_scores, torch.ones_like(gen_scores)
+                )
+                opt_d.zero_grad()
+                loss_d.backward()
+                opt_d.step()
 
-                    # score expert close to 0
-                    exp_scores = self.d(exp_obs, exp_acts)
-                    # score generator close to 1
-                    gen_scores = self.d(obs, acts)
+                # TD-update Value net
+                self.d.eval()
+                costs = torch.log(self.d(generation_obs, generation_act) + 1e-8).squeeze().detach()
+                esti_rwds = -1 * costs
 
-                    loss_d = torch.nn.functional.binary_cross_entropy(
-                        exp_scores, torch.zeros_like(exp_scores)
-                    ) + torch.nn.functional.binary_cross_entropy(
-                        gen_scores, torch.ones_like(gen_scores)
-                    )
-                    opt_d.zero_grad()
-                    loss_d.backward()
-                    opt_d.step()
+                self.v.train()
+                esti_v = self.v(generation_obs).view(-1)
+                td_v = esti_rwds[:-1] + gamma * esti_v[1:]
+                loss_v = F.mse_loss(esti_v[:-1], td_v)
+                opt_v.zero_grad()
+                loss_v.backward()
+                opt_v.step()
 
                 t2 = time.time() - t
                 t = time.time()
 
+                obs = FloatTensor(obs)
+                acts = FloatTensor(acts)
                 # TRPO-update Action net
                 # Get advantage values
                 self.d.eval()
