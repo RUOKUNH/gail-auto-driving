@@ -17,7 +17,7 @@ def main():
     action_dim = 2
 
     pi = PolicyNetwork(state_dim, action_dim)
-    model_path = 'my_gail/model'+exp+'.pth'
+    model_path = 'my_gail/bestmodel'+exp+'.pth'
     model = torch.load(model_path, map_location=torch.device('cpu'))
     pi.load_state_dict(model['action_net'])
     d = Discriminator(state_dim, action_dim)

@@ -140,8 +140,14 @@ class GAIL_PPO:
             #     th.join()
             # for i in range(self.collectors):
             #     self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma)
-            for i in range(self.collectors):
-                self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.pi, gamma)
+            collects = 0
+            while collects < self.collectors:
+                try:
+                    self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.pi, gamma)
+                    collects += 1
+                except:
+                    continue
+
             t1 = time.time() - t
             t = time.time()
 
@@ -235,7 +241,7 @@ class GAIL_PPO:
             self.d.eval()
             costs = torch.log(self.d(generation_obs, generation_act)+1e-8).squeeze().detach()
             esti_rwds = -1 * costs
-            # esti_rwds = -0.8 * costs + 0.2 * generation_rwd
+            esti_rwds = 0.8 * esti_rwds + 0.2 * generation_rwd
 
             self.v.train()
             esti_v = self.v(generation_obs).view(-1)
