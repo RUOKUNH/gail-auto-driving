@@ -234,8 +234,8 @@ class GAIL_PPO:
             # TD-update Value net
             self.d.eval()
             costs = torch.log(self.d(generation_obs, generation_act)+1e-8).squeeze().detach()
-            # esti_rwds = -1 * costs
-            esti_rwds = -0.8 * costs + 0.2 * generation_rwd
+            esti_rwds = -1 * costs
+            # esti_rwds = -0.8 * costs + 0.2 * generation_rwd
 
             self.v.train()
             esti_v = self.v(generation_obs).view(-1)

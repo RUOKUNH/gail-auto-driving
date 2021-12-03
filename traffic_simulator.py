@@ -92,7 +92,7 @@ class TrafficSim:
 
         observations = self.smarts[smart_id].reset(self.scenarios[smart_id])
         self.vehicle_itr += 1
-        print(self.vehicle_id[smart_id])
+        # print(self.vehicle_id[smart_id])
         return observations[self.vehicle_id[smart_id]]
 
     def _init_scenario(self):
