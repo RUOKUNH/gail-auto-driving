@@ -11,31 +11,34 @@ from torch import FloatTensor
 import argparse
 
 def main():
-    exp = 'exp29'
+    exp = 'exp31'
     env = TrafficSim(["scenarios/ngsim"])
-    state_dim = 20
+    state_dim = 34
     action_dim = 2
 
     pi = PolicyNetwork(state_dim, action_dim)
     model_path = 'my_gail/bestmodel'+exp+'.pth'
+    # model_path = 'my_gail/model' + exp + '.pth'
     model = torch.load(model_path, map_location=torch.device('cpu'))
     pi.load_state_dict(model['action_net'])
     d = Discriminator(state_dim, action_dim)
     d.load_state_dict(model['disc_net'])
     v = ValueNetwork(state_dim)
     v.load_state_dict(model['value_net'])
-
+    pdb.set_trace()
     while True:
         obs = []
         acts = []
         rwds = []
+        _obs = []
         ob = env.reset()
         done = False
         step = 0
         while not done and step <= 1000:
             step += 1
-            ob = make_obs(ob)
-            ob = make_obs_2(ob)
+            ob = expert_collector(ob)
+            _obs.append(ob)
+            ob = feature_detection(ob)
             act = pi(ob)
             act = act.sample()
             act = list(act.cpu().numpy())

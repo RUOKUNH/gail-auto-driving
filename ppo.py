@@ -76,7 +76,7 @@ class PPO:
             st = ed
         #########################
         if self.synchronize_step >= self.synchronize_steps:
-            self.collect_pnet = self.pnet
+            self.collect_pnet.load_state_dict(self.pnet.state_dict())
             self.synchronize_step = 0
 
         return self.collect_pnet

@@ -48,8 +48,8 @@ class GAIL_PPO:
         ob = self.env.reset()
         done = False
         while step < max_step and not done:
-            ob = make_obs(ob)
-            ob = make_obs_2(ob)
+            ob = expert_collector(ob)
+            ob = feature_detection(ob)
             speed.append(ob[1])
             act = pnet(ob).sample()
             act = list(act.cpu().numpy())
@@ -121,6 +121,9 @@ class GAIL_PPO:
             #               get_flat_params(self.d).detach(),]
             _iter += 1
 
+            saved_model = []
+            buffer_update_record = []
+
             # Generate interactive data
             obs2 = []
             acts2 = []
@@ -128,18 +131,6 @@ class GAIL_PPO:
             gammas2 = []
             speeds = []
             _step = [0]
-            # collect_threads = []
-            # for i in range(self.collectors):
-            #     # init_ob = self.env.reset(i)
-            #     th = threading.Thread(target=self.collect,
-            #     args=(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma))
-            #     collect_threads.append(th)
-            # for th in collect_threads:
-            #     th.start()
-            # for th in collect_threads:
-            #     th.join()
-            # for i in range(self.collectors):
-            #     self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, i, max_step, self.pi, gamma)
             collects = 0
             while collects < self.collectors:
                 try:
@@ -151,7 +142,8 @@ class GAIL_PPO:
             t1 = time.time() - t
             t = time.time()
 
-            score_list += [np.sum(rwd) for rwd in rwds2]
+            # score_list += [np.sum(rwd) for rwd in rwds2]
+            score_list.append(np.mean([np.sum(rwd) for rwd in rwds2]))
 
             for rwd in rwds2:
                 rwd = np.array(rwd)
@@ -170,7 +162,7 @@ class GAIL_PPO:
             for i in range(expert_samples):
                 sample = expert_buffer[batch_idx]
                 exp_obs = sample['observation']
-                exp_obs = [make_obs_2(ob) for ob in exp_obs]
+                exp_obs = [feature_detection(ob) for ob in exp_obs]
                 train_buffer[0].append(exp_obs)
                 train_buffer[1].append(sample['actions'])
                 batch_idx += 1
@@ -180,10 +172,11 @@ class GAIL_PPO:
             for i in range(self.collectors):
                 if sample_count == generation_samples:
                     break
-                # if rwds2[i] > 200:
-                train_buffer[0].append(obs2[i])
-                train_buffer[1].append(acts2[i])
-                sample_count += 1
+                if rwds2[i] > 150:
+                    train_buffer[0].append(obs2[i])
+                    train_buffer[1].append(acts2[i])
+                    sample_count += 1
+            buffer_update_record.append(sample_count + expert_samples)
             generation_obs = []
             generation_act = []
             for i in range(self.collectors):
@@ -211,31 +204,6 @@ class GAIL_PPO:
             opt_d.zero_grad()
             loss_d.backward()
             opt_d.step()
-            # for i in range(self.collectors):
-            #     obs, acts, gammas = obs2[i], acts2[i], gammas2[i]
-            #     obs, acts, gammas = FloatTensor(obs), FloatTensor(acts), FloatTensor(gammas)
-            #     # update D net
-            #     for record in batch_buffer:
-            #         self.d.train()
-            #         exp_obs = record['observation']
-            #         exp_acts = record['actions']
-            #         exp_obs = [make_obs_2(ob) for ob in exp_obs]
-            #         exp_obs = FloatTensor(exp_obs)
-            #         exp_acts = FloatTensor(exp_acts)
-            #
-            #         # score expert close to 0
-            #         exp_scores = self.d(exp_obs, exp_acts)
-            #         # score generator close to 1
-            #         gen_scores = self.d(obs, acts)
-            #
-            #         loss_d = torch.nn.functional.binary_cross_entropy(
-            #             exp_scores, torch.zeros_like(exp_scores)
-            #         ) + torch.nn.functional.binary_cross_entropy(
-            #             gen_scores, torch.ones_like(gen_scores)
-            #         )
-            #         opt_d.zero_grad()
-            #         loss_d.backward()
-            #         opt_d.step()
 
             # TD-update Value net
             self.d.eval()
@@ -260,16 +228,38 @@ class GAIL_PPO:
             t3 = time.time() - t
             t = time.time()
 
+            rwds2 = [np.sum(rwd) for rwd in rwds2]
             print(
                 f"{self.args.exp}, reward at iter {_iter}: step{_step[0]}, ",
-                "score: %.2f, %.2f, m_speed: %.2f" % (np.mean(score_list[-self.collectors:]), np.max(score_list[-self.collectors:]), np.mean(speeds)),
-                "time: %.2f, %.2f, %.2f" % (t1, t2, t3),
+                "score: %.2f, %.2f, %.2f, " % (np.mean(rwds2), np.max(rwds2), np.min(rwds2)),
+                "m_speed: %.2f, " % np.mean(speeds),
+                "time: %.2f, " % t1,
                 "d_loss %.3f, v_loss %.3f" % (loss_d, loss_v)
             )
 
             plt.plot(np.arange(len(score_list)), score_list)
             plt.savefig('rwd' + self.args.exp + '.png')
             plt.close()
+
+            state = {'action_net': self.ppo.get_pnet().state_dict(),
+                     'value_net': self.v.state_dict(),
+                     'disc_net': self.d.state_dict()}
+            saved_model.append(state)
+            if len(saved_model) > 20:
+                saved_model.pop(0)
+            if _iter > 30 and np.mean(score_list[-5:]) < 60:
+                # revert
+                score_list = score_list[:-20]
+                train_buffer = train_buffer[:-np.sum(buffer_update_record[-20:])]
+                _iter -= 20
+                state = saved_model[0]
+                self.ppo.pnet.load_state_dict(state['action_net'])
+                self.ppo.collect_pnet.load_state_dict(state['action_net'])
+                self.pi = self.ppo.collect_pnet
+                self.v.load_state_dict(state['value_net'])
+                self.d.load_state_dict(state['disc_net'])
+                continue
+
             if np.mean(score_list[-self.collectors:]) > best_score:
                 best_score = np.mean(score_list[-self.collectors:])
                 state = {'action_net': self.ppo.get_pnet().state_dict(),

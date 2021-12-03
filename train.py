@@ -9,14 +9,14 @@ from gail_ppo import GAIL_PPO
 
 def main(args):
     # expert_path = '../expert_simple_2.pkl'
-    expert_path = './expert_simple_2.pkl'
+    expert_path = './expert_datatmp.pkl'
     with open('config.json') as f:
         config = json.load(f)
 
     # env = TrafficSim(["./scenarios/ngsim"])
     # env = TrafficSim(["./ngsim"])
     # print('env created')
-    state_dim = 20
+    state_dim = 34
     action_dim = 2
 
     if args.optim == 'trpo':

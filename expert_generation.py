@@ -7,13 +7,13 @@ import pickle
 import argparse
 import time
 
-from utils import make_obs
-
 from smarts.core.smarts import SMARTS
 from smarts.core.scenario import Scenario
 from smarts.core.agent import AgentSpec
 from smarts.core.agent_interface import AgentInterface
 from smarts.core.controllers import ActionSpaceType
+
+from utils import *
 
 
 def acceleration_count(obs, obs_next, acc_dict, ang_v_dict, avg_dis_dict):
@@ -48,9 +48,10 @@ def cal_action(obs, obs_next, dt=0.1):
 
 
 def main(scenario):
-    # dataset_name = 'expert_simple.pkl' # [tan(heading), speed, x, y, l, h, ....]
-    # dataset_name = 'expert_simple_2.pkl' # [heading, speed, x, y, l, h, ....]
-    dataset_name = 'expert_simple_3.pkl'  # [heading, speed, x, y, l, h, ....(10 neighbor)]
+    # dataset_name = 'expert_simple.pkl' # [tan(heading), speed, x, y, l, w, ....]
+    # dataset_name = 'expert_simple_2.pkl' # [heading, speed, x, y, l, w, ....]
+    # dataset_name = 'expert_simple_3.pkl'  # [heading, speed, x, y, l, w, ....(10 neighbor)]
+    dataset_name = 'expert_data.pkl'  # [heading, speed, x, y, l, w, nx,ny,nl,nw,nh,ns,....(4 neighbor)]
     """Collect expert observations.
 
     Each input scenario is associated with some trajectory files. These trajectories
@@ -167,32 +168,10 @@ def main(scenario):
         # handle observations
         cars = obs.keys()
         for car in cars:
-            # ego_state = obs[car].ego_vehicle_state
-            # neighbors = obs[car].neighborhood_vehicle_states
-            # neighbors = [nei.position for nei in neighbors]
-            # if cars_ego_states.__contains__(car):
-            #     cars_ego_states[car].append(ego_state)
-            # else:
-            #     cars_ego_states[car] = [ego_state]
-            # if cars_neighbors.__contains__(car):
-            #     cars_neighbors[car].append(neighbors)
-            # else:
-            #     cars_neighbors[car] = [neighbors]
             if cars_obs.__contains__(car):
-                cars_obs[car].append(make_obs(obs[car]))
-                # cars_terminals[car].append(dones[car])
+                cars_obs[car].append(expert_collector(obs[car]))
             else:
-                cars_obs[car] = [make_obs(obs[car])]
-                # cars_terminals[car] = [dones[car]]
-    # for car in cars_obs:
-    #     cars_obs_next[car] = cars_obs[car][1:]
-    #     cars_obs[car] = cars_obs[car][:-1]
-    #     cars_act[car] = np.array(cars_act[car])
-    #     cars_terminals[car] = np.array(cars_terminals[car][:-1])
-    #     expert_obs.append(cars_obs[car])
-    #     expert_acts.append(cars_act[car])
-    #     expert_obs_next.append(cars_obs_next[car])
-    #     expert_terminals.append(cars_terminals[car])
+                cars_obs[car] = [expert_collector(obs[car])]
 
     smarts.destroy()
 
@@ -202,7 +181,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--scenario",
         type=str,
-        default="./scenarios/ngsim",
+        default="./ngsim",
     )
     args = parser.parse_args()
     main(scenario=args.scenario)
