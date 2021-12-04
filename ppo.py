@@ -9,7 +9,7 @@ from net import *
 
 
 class PPO:
-    def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=4, mini_batch=100):
+    def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=1, mini_batch=100):
         self.collect_pnet = PolicyNetwork(state_dim, action_dim)
         self.pnet = PolicyNetwork(state_dim, action_dim)
         self.optimizer = torch.optim.Adam(self.pnet.parameters())
@@ -23,11 +23,18 @@ class PPO:
         rated_advs = 0
         _grad = False
         for i in range(len(advs)):
-            if ratio[i]*advs[i] <= clip(ratio[i], 1-epsilon, 1+epsilon)*advs[i]:
-                rated_advs += ratio[i]*advs[i]
-                _grad = True
+            if advs[i] >= 0:
+                if ratio[i] > 1+epsilon:
+                    rated_advs += (1+epsilon) * advs[i]
+                else:
+                    rated_advs += ratio[i] * advs[i]
+                    _grad = True
             else:
-                rated_advs += clip(ratio[i], 1-epsilon, 1+epsilon)*advs[i]
+                if ratio[i] < 1-epsilon:
+                    rated_advs += (1-epsilon) * advs[i]
+                else:
+                    rated_advs += ratio[i] * advs[i]
+                    _grad = True
         rated_advs /= len(advs)
         return -rated_advs, _grad
 

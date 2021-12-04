@@ -171,10 +171,78 @@ def feature_detection(obs):
     return feature
 
 
+# heading normalize to [-pi, pi)
+# record dist, relative speed-x, relative speed-y at four directions, line id (-1, 0, 1)
+def new_feature_detection(obs):
+    # ego_state = obs[:6]
+    ego_state = obs[0]
+    vehicles = []
+    for i in range(4):
+        vehicle_state = obs[6 * i + 1: 6 * i + 7]
+        vehicles.append(vehicle_state)
+    e_x, e_y = ego_state.position[:2]
+    e_h = ego_state.heading.real
+    e_s = ego_state.speed
+    e_l = ego_state.bounding_box.length
+    e_w = ego_state.bounding_box.width
+    land_index = ego_state.land_index
+    # e_h, e_s, e_x, e_y, e_l, e_w = ego_state
+    e_h += np.pi / 2
+    e_h = normalize(e_h, -np.pi, np.pi, 2*np.pi)
+    e_sx = e_s * np.cos(e_h)
+    e_sy = e_s * np.sin(e_h)
+    e_corners = get_corners(e_x, e_y, e_l, e_w, e_h)
+    e_corners = np.array(e_corners)
+    e_max_y = np.max(e_corners[:, 1])
+    e_min_y = np.min(e_corners[:, 1])
+    e_max_x = np.max(e_corners[:, 0])
+    e_min_x = np.min(e_corners[:, 0])
+    feature = np.array([e_x, e_y, e_h, e_s, e_sx, e_sy, e_max_y, e_min_y, e_max_x, e_min_x])
+    radius_sample = 4
+    radius = np.arange(0, 2 * np.pi, 2 * np.pi / radius_sample)
+    e_dists = [get_cross_point_dist(e_x, e_y, r+e_h, e_corners, e_h) for r in radius]
+    dists = np.ones(radius_sample) * 20
+    r_speeds_x = np.zeros(radius_sample)
+    r_speeds_y = np.zeros(radius_sample)
+    for vehicle_state in vehicles:
+        if not np.any(vehicle_state):
+            continue
+        # vehicle_state[4] += np.pi / 2
+        # vehicle_state[4] = normalize(vehicle_state[4], -np.pi, np.pi, 2*np.pi)
+        x, y, l, w, heading, speed = vehicle_state
+        heading += np.pi / 2
+        heading = normalize(heading, -np.pi, np.pi, 2*np.pi)
+        corners = get_corners(x, y, l, w, heading)  # four corner of the boxing
+        corners = np.array(corners)
+        corner_angles = np.arctan((corners[:, 1] - e_y) / (corners[:, 0] - e_x + 1e-8))
+        corner_angles[(corners[:, 0] - e_x) < 0] += np.pi
+        corner_angles[corner_angles < 0] += 2*np.pi
+        r_angles = corner_angles - e_h  # corner angles relative to ego_heading
+        for i in range(len(r_angles)):
+            r_angles[i] = normalize(r_angles[i], 0, 2*np.pi, 2*np.pi)
+        min_angle, max_angle = np.min(r_angles), np.max(r_angles)
+        for i in range(radius_sample):
+            r = radius[i]
+            if (max_angle-min_angle < np.pi) and (r<min_angle) or (r>max_angle):
+                continue
+            if (max_angle-min_angle > np.pi) and (min_angle < r <max_angle):
+                continue
+            real_r = e_h + r
+            dist = get_cross_point_dist(e_x, e_y, real_r, corners, heading)
+            dist -= e_dists[i]
+            if dist < dists[i]:
+                dists[i] = dist
+                r_speeds_x[i] = speed * np.cos(heading) - e_s * np.cos(e_h)
+                r_speeds_y[i] = speed * np.sin(heading) - e_s * np.sin(e_h)
+    ego_land_index = np.zeros(5)
+    ego_land_index[land_index] = 1
+    feature = np.concatenate((feature, dists, r_speeds_x, r_speeds_y, ego_land_index))
+    return feature
+
+
 def get_corners(x, y, l, w, heading):
     corner_pass = [(l / 2, w / 2), (l / 2, -w / 2), (-l / 2, -w / 2), (-l / 2, w / 2)]
     corners = []
-    # pdb.set_trace()
     for i in range(4):
         p = corner_pass[i]
         xc, yc = x, y

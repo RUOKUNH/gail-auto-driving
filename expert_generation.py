@@ -182,7 +182,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--scenario",
         type=str,
-        default="./ngsim",
+        default="../scenarios/ngsim",
     )
     args = parser.parse_args()
     main(scenario=args.scenario)

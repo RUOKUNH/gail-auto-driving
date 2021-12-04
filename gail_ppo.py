@@ -75,8 +75,8 @@ class GAIL_PPO:
 
     def train(self, expert_path, render=False):
         best_score = -np.inf
-        # self.env = TrafficSim(["../scenarios/ngsim"], envision=False, collectors=self.collectors)
-        self.env = TrafficSim(["./ngsim"], envision=False)
+        self.env = TrafficSim(["../scenarios/ngsim"], envision=False)
+        # self.env = TrafficSim(["./ngsim"], envision=False)
         if self.args.con:
             model = torch.load('model' + self.args.exp + '.pth')
             self.ppo.pnet.load_state_dict(model['action_net'])
@@ -134,6 +134,7 @@ class GAIL_PPO:
             speeds = []
             _step = [0]
             collects = 0
+            self.t = time.time()
             while collects < self.collectors:
                 try:
                     self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.pi, gamma)
@@ -232,14 +233,6 @@ class GAIL_PPO:
             t = time.time()
 
             rwds2 = [np.sum(rwd) for rwd in rwds2]
-            print(
-                f"{self.args.exp}, reward at iter {_iter}: step{_step[0]}, ",
-                "score: %.2f, %.2f, %.2f, " % (np.mean(rwds2), np.max(rwds2), np.min(rwds2)),
-                "m_speed: %.2f, " % np.mean(speeds),
-                "time: %.2f, " % t1,
-                "d_loss %.3f, v_loss %.3f, " % (loss_d, loss_v),
-                f"revert {revert_count}"
-            )
 
             plt.plot(np.arange(len(score_list)), score_list)
             plt.savefig('rwd' + self.args.exp + '.png')
@@ -251,7 +244,7 @@ class GAIL_PPO:
             saved_model.append(state)
             if len(saved_model) > 20:
                 saved_model.pop(0)
-            if _iter > 30 and np.mean(score_list[-5:]) < 60:
+            if _iter > 30 and np.mean(score_list[-5:]) < 60 and self.args.revert:
                 # revert
                 revert_count += 1
                 print("############")
@@ -292,5 +285,17 @@ class GAIL_PPO:
 
             # except KeyboardInterrupt:
             #     exit()
+            t4 = time.time() - t
+            t = time.time()
+
+            print(
+                f"{self.args.exp}, reward at iter {_iter}: step{_step[0]}, ",
+                "score: %.2f, %.2f, %.2f, " % (np.mean(rwds2), np.max(rwds2), np.min(rwds2)),
+                "m_speed: %.2f, " % np.mean(speeds),
+                "time: %.2f, %.2f" % (t1, t4),
+                "d_loss %.3f, v_loss %.3f, " % (loss_d, loss_v),
+                f"revert {revert_count}"
+            )
+
 
         return self.ppo.get_pnet(), self.v, self.d

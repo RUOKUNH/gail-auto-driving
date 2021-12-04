@@ -43,5 +43,7 @@ if __name__ == '__main__':
                         type=bool)
     parser.add_argument('--optim',
                         type=str)
+    parser.add_argument('--revert',
+                        type=bool)
     args = parser.parse_args()
     main(args)
