@@ -41,6 +41,7 @@ class PPO:
     def update(self, obs, acts, gamma, vnet, dnet):
         self.synchronize_step += 1
         ######### update ########
+        _update = False
         update_data = []
         vnet.eval()
         dnet.eval()
@@ -87,13 +88,14 @@ class PPO:
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
+                _update = True
             st = ed
         #########################
         if self.synchronize_step >= self.synchronize_steps:
             self.collect_pnet.load_state_dict(self.pnet.state_dict())
             self.synchronize_step = 0
 
-        return self.collect_pnet
+        return self.collect_pnet, _update
 
     def get_pnet(self):
         return self.pnet

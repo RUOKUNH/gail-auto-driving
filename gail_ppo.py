@@ -49,7 +49,7 @@ class GAIL_PPO:
         done = False
         while step < max_step and not done:
             ob = expert_collector(ob)
-            ob = feature_detection(ob)
+            ob = new_feature_detection(ob)
             speed.append(ob[1])
             act = pnet(ob).sample()
             act = list(act.cpu().numpy())
@@ -112,7 +112,6 @@ class GAIL_PPO:
                 break
         random.shuffle(expert_buffer)
         batch_idx = 0
-        batch_size = 10
         revert_count = 0
         _iter = 0
         t = time.time()
@@ -134,7 +133,7 @@ class GAIL_PPO:
             speeds = []
             _step = [0]
             collects = 0
-            self.t = time.time()
+            # self.t = time.time()
             while collects < self.collectors:
                 try:
                     self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.pi, gamma)
@@ -142,8 +141,8 @@ class GAIL_PPO:
                 except:
                     continue
 
-            t1 = time.time() - t
-            t = time.time()
+            # t1 = time.time() - t
+            # t = time.time()
 
             # score_list += [np.sum(rwd) for rwd in rwds2]
             score_list.append(np.mean([np.sum(rwd) for rwd in rwds2]))
@@ -159,13 +158,14 @@ class GAIL_PPO:
                 pop_idx = random.randint(0, len(train_buffer[0])-1)
                 train_buffer[0].pop(pop_idx)
                 train_buffer[1].pop(pop_idx)
+            sample_num = 10
             expert_ratio = beta ** (_iter - 1)
-            expert_samples = int(np.ceil(10 * expert_ratio))
-            generation_samples = min(10 - expert_samples, self.collectors)
+            expert_samples = int(np.ceil(sample_num * expert_ratio))
+            generation_samples = min(sample_num - expert_samples, self.collectors)
             for i in range(expert_samples):
                 sample = expert_buffer[batch_idx]
                 exp_obs = sample['observation']
-                exp_obs = [feature_detection(ob) for ob in exp_obs]
+                exp_obs = [new_feature_detection(ob) for ob in exp_obs]
                 train_buffer[0].append(exp_obs)
                 train_buffer[1].append(sample['actions'])
                 batch_idx += 1
@@ -188,13 +188,15 @@ class GAIL_PPO:
             generation_obs = FloatTensor(generation_obs)
             generation_act = FloatTensor(generation_act)
             generation_rwd = np.concatenate(rwds2)
-            expert_sample_idx = np.random.randint(0, len(train_buffer[0]), 10)
+            train_samples = min(len(train_buffer[0]), 10)
+            expert_sample_idx = np.random.randint(0, len(train_buffer[0]), train_samples)
             expert_obs = []
             expert_act = []
             for i in expert_sample_idx:
                 # pdb.set_trace()
                 expert_obs += train_buffer[0][i]
                 expert_act += list(train_buffer[1][i])
+            # pdb.set_trace()
             expert_obs = FloatTensor(expert_obs)
             expert_act = FloatTensor(expert_act)
             exp_scores = self.d(expert_obs, expert_act)
@@ -223,14 +225,14 @@ class GAIL_PPO:
             loss_v.backward()
             opt_v.step()
 
-            t2 = time.time() - t
-            t = time.time()
+            # t2 = time.time() - t
+            # t = time.time()
 
             # PPO update Action net
-            self.pi = self.ppo.update(obs2, acts2, gamma, self.v, self.d)
+            self.pi, _update = self.ppo.update(obs2, acts2, gamma, self.v, self.d)
 
-            t3 = time.time() - t
-            t = time.time()
+            # t3 = time.time() - t
+            # t = time.time()
 
             rwds2 = [np.sum(rwd) for rwd in rwds2]
 
@@ -244,23 +246,23 @@ class GAIL_PPO:
             saved_model.append(state)
             if len(saved_model) > 20:
                 saved_model.pop(0)
-            if _iter > 30 and np.mean(score_list[-5:]) < 60 and self.args.revert:
-                # revert
-                revert_count += 1
-                print("############")
-                print("revert")
-                print("############")
-                score_list = score_list[:-20]
-                train_buffer[0] = train_buffer[0][:-np.sum(buffer_update_record[-20:])]
-                train_buffer[1] = train_buffer[1][:-np.sum(buffer_update_record[-20:])]
-                _iter -= 20
-                state = saved_model[0]
-                self.ppo.pnet.load_state_dict(state['action_net'])
-                self.ppo.collect_pnet.load_state_dict(state['action_net'])
-                self.pi = self.ppo.collect_pnet
-                self.v.load_state_dict(state['value_net'])
-                self.d.load_state_dict(state['disc_net'])
-                continue
+            # if _iter > 30 and np.mean(score_list[-5:]) < 60 and self.args.revert:
+            #     # revert
+            #     revert_count += 1
+            #     print("############")
+            #     print("revert")
+            #     print("############")
+            #     score_list = score_list[:-20]
+            #     train_buffer[0] = train_buffer[0][:-np.sum(buffer_update_record[-20:])]
+            #     train_buffer[1] = train_buffer[1][:-np.sum(buffer_update_record[-20:])]
+            #     _iter -= 20
+            #     state = saved_model[0]
+            #     self.ppo.pnet.load_state_dict(state['action_net'])
+            #     self.ppo.collect_pnet.load_state_dict(state['action_net'])
+            #     self.pi = self.ppo.collect_pnet
+            #     self.v.load_state_dict(state['value_net'])
+            #     self.d.load_state_dict(state['disc_net'])
+            #     continue
 
             if np.mean(score_list[-self.collectors:]) > best_score:
                 best_score = np.mean(score_list[-self.collectors:])
@@ -292,9 +294,9 @@ class GAIL_PPO:
                 f"{self.args.exp}, reward at iter {_iter}: step{_step[0]}, ",
                 "score: %.2f, %.2f, %.2f, " % (np.mean(rwds2), np.max(rwds2), np.min(rwds2)),
                 "m_speed: %.2f, " % np.mean(speeds),
-                "time: %.2f, %.2f" % (t1, t4),
+                "time: %.2f" % t4,
                 "d_loss %.3f, v_loss %.3f, " % (loss_d, loss_v),
-                f"revert {revert_count}"
+                f"revert {revert_count}, ppo {_update}"
             )
 
 

@@ -82,7 +82,8 @@ def expert_collector(obs):
     w = ego_state.bounding_box.width
     heading = ego_state.heading.real
     speed = ego_state.speed
-    _obs += [heading, speed, x, y, l, w]
+    # _obs += [heading, speed, x, y, l, w]
+    _obs = [ego_state]
     neighbor_position = np.array([n.position[:2] for n in neighbors])
     if len(neighbor_position) > 0:
         dist = np.sqrt((neighbor_position[:, 0] - x) ** 2 + (neighbor_position[:, 1] - y) ** 2)

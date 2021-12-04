@@ -36,7 +36,7 @@ class GAIL:
         self.args = args
 
     def train(self, expert_path, render=False):
-        env = TrafficSim(["./ngsim"], envision=False)
+        env = TrafficSim(["../scenarios/ngsim"], envision=False)
         if self.args.con:
             model = torch.load('model' + self.args.exp + '.pth')
             self.pi.load_state_dict(model['action_net'])
@@ -207,8 +207,7 @@ class GAIL:
                 print(
                     f"{self.args.exp}, reward at iter {_iter}: step{step}, ",
                     "score: %.2f, m_speed: %.2f" % (np.sum(rwds), np.mean(speeds)),
-                    "time: %.2f, %.2f, %.2f" % (t1, t2, t3),
-                    "last heading %.4f" % obs[-1, 0],
+                    "time: %.2f" % t1,
                     "d_loss %.3f, v_loss %.3f" % (loss_d, loss_v)
                 )
 

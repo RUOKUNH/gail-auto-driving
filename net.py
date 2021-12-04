@@ -18,24 +18,24 @@ class PolicyNetwork(torch.nn.Module):
     def __init__(self, state_dim, action_dim):
         super(PolicyNetwork, self).__init__()
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(state_dim, 128),
+            torch.nn.Linear(state_dim, 96),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            # torch.nn.Linear(32, 64),
-            # torch.nn.Tanh(),
+            torch.nn.Linear(96, 96),
+            torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            # torch.nn.Linear(64, 64),
-            # torch.nn.Tanh(),
+            torch.nn.Linear(96, 128),
+            torch.nn.Tanh(),
             # torch.nn.ReLU(),
             torch.nn.Linear(128, 128),
             # torch.nn.Linear(state_dim, 64),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(128, 64),
+            torch.nn.Linear(128, 256),
             # torch.nn.Linear(64, 128),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(64, action_dim)
+            torch.nn.Linear(256, action_dim)
             # torch.nn.Linear(128, action_dim)
         )
         self.scale_net = torch.nn.Tanh()
@@ -67,24 +67,24 @@ class ValueNetwork(torch.nn.Module):
     def __init__(self, state_dim):
         super(ValueNetwork, self).__init__()
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(state_dim, 128),
+            torch.nn.Linear(state_dim, 96),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            # torch.nn.Linear(32, 64),
-            # torch.nn.Tanh(),
+            torch.nn.Linear(96, 96),
+            torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            # torch.nn.Linear(64, 64),
-            # torch.nn.Tanh(),
+            torch.nn.Linear(96, 128),
+            torch.nn.Tanh(),
             # torch.nn.ReLU(),
+            torch.nn.Linear(128, 128),
+            # torch.nn.Linear(state_dim, 64),
+            torch.nn.Tanh(),
+            # torch.nn.ReLU(),
+            torch.nn.Linear(128, 256),
             # torch.nn.Linear(64, 128),
-            # torch.nn.Tanh(),
-            # torch.nn.ReLU(),
-            # torch.nn.Linear(128, 128),
-            # torch.nn.Tanh(),
-            torch.nn.Linear(128, 64),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(64, 1)
+            torch.nn.Linear(256, 1)
         )
 
     def forward(self, states):
@@ -119,21 +119,21 @@ class Discriminator(torch.nn.Module):
         self.net_in_dim = state_dim + action_dim
 
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(self.net_in_dim, 64),
+            torch.nn.Linear(self.net_in_dim, 96),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            # torch.nn.Linear(32, 64),
-            # torch.nn.Tanh(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(64, 64),
+            torch.nn.Linear(96, 96),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            torch.nn.Linear(64, 128),
+            torch.nn.Linear(96, 128),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
-            # torch.nn.Linear(128, 128),
-            # torch.nn.Tanh(),
+            torch.nn.Linear(128, 128),
+            # torch.nn.Linear(state_dim, 64),
+            torch.nn.Tanh(),
+            # torch.nn.ReLU(),
             torch.nn.Linear(128, 256),
+            # torch.nn.Linear(64, 128),
             torch.nn.Tanh(),
             # torch.nn.ReLU(),
             torch.nn.Linear(256, 1)
