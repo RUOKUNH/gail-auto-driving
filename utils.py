@@ -129,7 +129,7 @@ def feature_detection(obs):
     radius = np.arange(0, 2 * np.pi, 2 * np.pi / radius_sample)
     e_dists = [get_cross_point_dist(e_x, e_y, r+e_h, e_corners, e_h) for r in radius]
     # pdb.set_trace()
-    dists = np.ones(radius_sample) * 30
+    dists = np.ones(radius_sample) * 20
     r_speeds_x = np.zeros(radius_sample)
     r_speeds_y = np.zeros(radius_sample)
     for vehicle_state in vehicles:

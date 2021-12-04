@@ -11,14 +11,14 @@ from torch import FloatTensor
 import argparse
 
 def main():
-    exp = 'exp31'
+    exp = 'exp34'
     env = TrafficSim(["scenarios/ngsim"])
     state_dim = 34
     action_dim = 2
 
     pi = PolicyNetwork(state_dim, action_dim)
-    model_path = 'my_gail/bestmodel'+exp+'.pth'
-    # model_path = 'my_gail/model' + exp + '.pth'
+    # model_path = 'my_gail/bestmodel'+exp+'.pth'
+    model_path = 'my_gail/model' + exp + '.pth'
     model = torch.load(model_path, map_location=torch.device('cpu'))
     pi.load_state_dict(model['action_net'])
     d = Discriminator(state_dim, action_dim)

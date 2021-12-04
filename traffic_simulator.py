@@ -97,6 +97,7 @@ class TrafficSim:
 
     def _init_scenario(self):
         # pdb.set_trace()
+        random.seed()
         self.vehicle_itr = 0
         self.scenarios = []
         self.vehicle_missions = []
@@ -105,7 +106,7 @@ class TrafficSim:
             self.scenarios.append(next(self.scenarios_iterator))
             self.vehicle_missions.append(self.scenarios[i].discover_missions_of_traffic_histories())
             self.vehicle_ids.append(list(self.vehicle_missions[i].keys()))
-            np.random.shuffle(self.vehicle_ids[i])
+            random.shuffle(self.vehicle_ids[i])
             print(f'scenario {i} created')
 
     def destroy(self):

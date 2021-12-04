@@ -5,12 +5,13 @@ from utils import *
 import torch
 from torch import FloatTensor
 import random
+from net import *
 
 
 class PPO:
-    def __init__(self, init_pnet, config, n_step=5, synchronize_steps=4, mini_batch=100):
-        self.collect_pnet = init_pnet
-        self.pnet = init_pnet
+    def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=4, mini_batch=100):
+        self.collect_pnet = PolicyNetwork(state_dim, action_dim)
+        self.pnet = PolicyNetwork(state_dim, action_dim)
         self.optimizer = torch.optim.Adam(self.pnet.parameters())
         self.synchronize_steps = synchronize_steps
         self.synchronize_step = 0
@@ -20,10 +21,15 @@ class PPO:
 
     def L_clip(self, advs, ratio, epsilon=0.2):
         rated_advs = 0
+        _grad = False
         for i in range(len(advs)):
-            rated_advs += min(ratio[i]*advs[i], clip(ratio[i], 1-epsilon, 1+epsilon)*advs[i])
+            if ratio[i]*advs[i] <= clip(ratio[i], 1-epsilon, 1+epsilon)*advs[i]:
+                rated_advs += ratio[i]*advs[i]
+                _grad = True
+            else:
+                rated_advs += clip(ratio[i], 1-epsilon, 1+epsilon)*advs[i]
         rated_advs /= len(advs)
-        return -rated_advs
+        return -rated_advs, _grad
 
     def update(self, obs, acts, gamma, vnet, dnet):
         self.synchronize_step += 1
@@ -67,12 +73,13 @@ class PPO:
             old_dist = self.collect_pnet(_obs)
             _ratio = torch.exp(dist.log_prob(_acts)
                                - old_dist.log_prob(_acts).detach())
-            loss = self.L_clip(_advs, _ratio)
+            loss, _grad = self.L_clip(_advs, _ratio)
             # dist_causal_entropy = self.config['lambda_'] * (-1 * self.pnet(_obs).log_prob(_acts)).mean()
             # loss -= dist_causal_entropy
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+            if _grad:
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
             st = ed
         #########################
         if self.synchronize_step >= self.synchronize_steps:

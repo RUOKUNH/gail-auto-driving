@@ -26,11 +26,11 @@ class GAIL_PPO:
         self.action_dim = action_dim
         self.train_config = train_config
 
-        self.pi = PolicyNetwork(self.state_dim, self.action_dim)
+        self.ppo = PPO(state_dim, action_dim, train_config)
+
+        self.pi = self.ppo.collect_pnet
         self.v = ValueNetwork(self.state_dim)
         self.d = Discriminator(self.state_dim, self.action_dim)
-
-        self.ppo = PPO(self.pi, train_config)
 
         self.args = args
 
@@ -79,10 +79,11 @@ class GAIL_PPO:
         self.env = TrafficSim(["./ngsim"], envision=False)
         if self.args.con:
             model = torch.load('model' + self.args.exp + '.pth')
-            self.pi.load_state_dict(model['action_net'])
+            self.ppo.pnet.load_state_dict(model['action_net'])
+            self.ppo.collect_pnet.load_state_dict(model['action_net'])
+            self.pi =self.ppo.collect_pnet
             self.v.load_state_dict(model['value_net'])
             self.d.load_state_dict(model['disc_net'])
-            self.ppo = PPO(self.pi, self.train_config)
             with open('scores.txt', 'rb') as pkf:
                 scores_dict = pkl.load(pkf)
                 score_list = scores_dict[self.args.exp]
@@ -99,9 +100,9 @@ class GAIL_PPO:
 
         expert_buffer = []
         # obs, act
-        train_buffer = ([], [])
+        train_buffer = [[], []]
         max_train_buffer = 2000
-        beta = 0.995
+        beta = 0.99
         pkf = open(expert_path, 'rb')
         while True:
             try:
@@ -112,6 +113,7 @@ class GAIL_PPO:
         random.shuffle(expert_buffer)
         batch_idx = 0
         batch_size = 10
+        revert_count = 0
         _iter = 0
         t = time.time()
         while _iter < train_iter:
@@ -172,10 +174,10 @@ class GAIL_PPO:
             for i in range(self.collectors):
                 if sample_count == generation_samples:
                     break
-                if rwds2[i] > 150:
-                    train_buffer[0].append(obs2[i])
-                    train_buffer[1].append(acts2[i])
-                    sample_count += 1
+                # if np.sum(rwds2[i]) > 150:
+                train_buffer[0].append(obs2[i])
+                train_buffer[1].append(acts2[i])
+                sample_count += 1
             buffer_update_record.append(sample_count + expert_samples)
             generation_obs = []
             generation_act = []
@@ -209,6 +211,7 @@ class GAIL_PPO:
             self.d.eval()
             costs = torch.log(self.d(generation_obs, generation_act)+1e-8).squeeze().detach()
             esti_rwds = -1 * costs
+            # take real reward in use
             esti_rwds = 0.8 * esti_rwds + 0.2 * generation_rwd
 
             self.v.train()
@@ -234,7 +237,8 @@ class GAIL_PPO:
                 "score: %.2f, %.2f, %.2f, " % (np.mean(rwds2), np.max(rwds2), np.min(rwds2)),
                 "m_speed: %.2f, " % np.mean(speeds),
                 "time: %.2f, " % t1,
-                "d_loss %.3f, v_loss %.3f" % (loss_d, loss_v)
+                "d_loss %.3f, v_loss %.3f, " % (loss_d, loss_v),
+                f"revert {revert_count}"
             )
 
             plt.plot(np.arange(len(score_list)), score_list)
@@ -249,8 +253,13 @@ class GAIL_PPO:
                 saved_model.pop(0)
             if _iter > 30 and np.mean(score_list[-5:]) < 60:
                 # revert
+                revert_count += 1
+                print("############")
+                print("revert")
+                print("############")
                 score_list = score_list[:-20]
-                train_buffer = train_buffer[:-np.sum(buffer_update_record[-20:])]
+                train_buffer[0] = train_buffer[0][:-np.sum(buffer_update_record[-20:])]
+                train_buffer[1] = train_buffer[1][:-np.sum(buffer_update_record[-20:])]
                 _iter -= 20
                 state = saved_model[0]
                 self.ppo.pnet.load_state_dict(state['action_net'])
