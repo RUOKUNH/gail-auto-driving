@@ -186,7 +186,7 @@ def new_feature_detection(obs):
     e_s = ego_state.speed
     e_l = ego_state.bounding_box.length
     e_w = ego_state.bounding_box.width
-    land_index = ego_state.land_index
+    land_index = ego_state.lane_index
     # e_h, e_s, e_x, e_y, e_l, e_w = ego_state
     e_h += np.pi / 2
     e_h = normalize(e_h, -np.pi, np.pi, 2*np.pi)

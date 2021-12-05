@@ -52,7 +52,8 @@ def main(scenario):
     # dataset_name = 'expert_simple_2.pkl' # [heading, speed, x, y, l, w, ....]
     # dataset_name = 'expert_simple_3.pkl'  # [heading, speed, x, y, l, w, ....(10 neighbor)]
     # dataset_name = 'expert_data.pkl'  # [heading, speed, x, y, l, w, nx,ny,nl,nw,nh,ns,....(4 neighbor)]
-    dataset_name = 'expert_data3.pkl'
+    # dataset_name = 'expert_data3.pkl'
+    dataset_name = 'expert_data_full.pkl'
     """Collect expert observations.
 
     Each input scenario is associated with some trajectory files. These trajectories
@@ -124,7 +125,6 @@ def main(scenario):
         obs, _, _, dones = smarts.observe_from(
             smarts.vehicle_index.social_vehicle_ids()
         )
-        # pdb.set_trace()
 
         if done_vehicles:
             ts = time.time() - t
@@ -170,9 +170,9 @@ def main(scenario):
         cars = obs.keys()
         for car in cars:
             if cars_obs.__contains__(car):
-                cars_obs[car].append(expert_collector(obs[car]))
+                cars_obs[car].append(obs[car])
             else:
-                cars_obs[car] = [expert_collector(obs[car])]
+                cars_obs[car] = [obs[car]]
 
     smarts.destroy()
 

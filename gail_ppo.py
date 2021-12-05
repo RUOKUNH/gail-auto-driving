@@ -47,6 +47,7 @@ class GAIL_PPO:
         step = 0
         ob = self.env.reset()
         done = False
+        # pdb.set_trace()
         while step < max_step and not done:
             ob = expert_collector(ob)
             ob = new_feature_detection(ob)
@@ -63,6 +64,7 @@ class GAIL_PPO:
             gammas1.append(gamma ** step)
 
             step += 1
+            # print(step)
 
         # self.collector_lock.acquire()
         obs.append(obs1)
@@ -183,11 +185,11 @@ class GAIL_PPO:
             generation_obs = []
             generation_act = []
             for i in range(self.collectors):
-                generation_obs += obs2[i]
-                generation_act += acts2[i]
-            generation_obs = FloatTensor(generation_obs)
-            generation_act = FloatTensor(generation_act)
-            generation_rwd = np.concatenate(rwds2)
+                generation_obs.append(torch.FloatTensor(obs2[i]))
+                generation_act.append(torch.FloatTensor(acts2[i]))
+            # generation_obs = FloatTensor(generation_obs)
+            # generation_act = FloatTensor(generation_act)
+            generation_rwd = [torch.FloatTensor(rwd) for rwd in rwds2]
             train_samples = min(len(train_buffer[0]), 10)
             expert_sample_idx = np.random.randint(0, len(train_buffer[0]), train_samples)
             expert_obs = []
@@ -197,33 +199,49 @@ class GAIL_PPO:
                 expert_obs += train_buffer[0][i]
                 expert_act += list(train_buffer[1][i])
             # pdb.set_trace()
-            expert_obs = FloatTensor(expert_obs)
-            expert_act = FloatTensor(expert_act)
-            exp_scores = self.d(expert_obs, expert_act)
-            gen_scores = self.d(generation_obs, generation_act)
-            loss_d = torch.nn.functional.binary_cross_entropy(
-                exp_scores, torch.zeros_like(exp_scores)
-            ) + torch.nn.functional.binary_cross_entropy(
-                gen_scores, torch.ones_like(gen_scores)
-            )
-            opt_d.zero_grad()
-            loss_d.backward()
-            opt_d.step()
+            # expert_obs = FloatTensor(expert_obs)
+            # expert_act = FloatTensor(expert_act)
+            # exp_scores = self.d(expert_obs, expert_act)
+            # gen_scores = torch.cat(
+            #     [self.d(generation_obs[i], generation_act[i]) for i in range(len(generation_obs))]
+            # )
+
+            gen_obs = torch.cat(generation_obs)
+            gen_act = torch.cat(generation_act)
+            exp_samples = len(expert_obs) // 10 + 1
+            gen_samples = len(gen_obs) // 10 + 1
+            self.d.train()
+            for i in range(10):
+                _expert_obs = FloatTensor(expert_obs[i*exp_samples : (i+1)*exp_samples])
+                _expert_act = FloatTensor(expert_act[i*exp_samples : (i+1)*exp_samples])
+                _gen_obs = gen_obs[i*gen_samples : (i+1)*gen_samples]
+                _gen_act = gen_act[i*gen_samples : (i+1)*gen_samples]
+                exp_scores = self.d(_expert_obs, _expert_act)
+                gen_scores = self.d(_gen_obs, _gen_act)
+                loss_d = torch.nn.functional.binary_cross_entropy(
+                    exp_scores, torch.zeros_like(exp_scores)
+                ) + torch.nn.functional.binary_cross_entropy(
+                    gen_scores, torch.ones_like(gen_scores)
+                )
+                opt_d.zero_grad()
+                loss_d.backward()
+                opt_d.step()
 
             # TD-update Value net
             self.d.eval()
-            costs = torch.log(self.d(generation_obs, generation_act)+1e-8).squeeze().detach()
-            esti_rwds = -1 * costs
-            # take real reward in use
-            esti_rwds = 0.8 * esti_rwds + 0.2 * generation_rwd
-
             self.v.train()
-            esti_v = self.v(generation_obs).view(-1)
-            td_v = esti_rwds[:-1] + gamma * esti_v[1:]
-            loss_v = F.mse_loss(esti_v[:-1], td_v)
-            opt_v.zero_grad()
-            loss_v.backward()
-            opt_v.step()
+            for i in range(len(generation_obs)):
+                costs = torch.log(self.d(generation_obs[i], generation_act[i])+1e-8).squeeze().detach()
+                esti_rwds = -1 * costs
+                # take real reward in use
+                esti_rwds = 0.8 * esti_rwds + 0.2 * generation_rwd[i]
+
+                esti_v = self.v(generation_obs[i]).view(-1)
+                td_v = esti_rwds[:-1] + gamma * esti_v[1:]
+                loss_v = F.mse_loss(esti_v[:-1], td_v)
+                opt_v.zero_grad()
+                loss_v.backward()
+                opt_v.step()
 
             # t2 = time.time() - t
             # t = time.time()
