@@ -310,7 +310,7 @@ def feature2(obs):
     e_max_x = np.max(e_corners[:, 0])
     e_min_x = np.min(e_corners[:, 0])
     feature = np.array([e_x, e_y, e_h, e_s, e_sx, e_sy, e_max_y, e_min_y, e_max_x, e_min_x])
-    radius_sample = 4
+    radius_sample = 8
     radius = np.arange(0, 2 * np.pi, 2 * np.pi / radius_sample)
     e_dists = [get_cross_point_dist(e_x, e_y, r+e_h, e_corners, e_h) for r in radius]
     dists = np.ones(radius_sample) * 20
@@ -348,7 +348,7 @@ def feature2(obs):
                 r_speeds_y[i] = speed * np.sin(heading) - e_s * np.sin(e_h)
     ego_land_index = np.zeros(5)
     ego_land_index[land_index] = 1
-    feature = np.concatenate((feature, dists, r_speeds_x, r_speeds_y, ego_land_index))
+    feature = np.concatenate((feature, dists, r_speeds_x, r_speeds_y))
     return feature
 
 
@@ -420,13 +420,17 @@ def feature3(obs):
     lane_h, lane_y = get_lane_info(lane_id, e_x)
     lane_offset = (e_y - lane_y) * np.cos(lane_h)
     lane_relative_h = e_h - lane_h
+    e_s_lane = e_s * np.cos(lane_relative_h)
+    e_s_lateral = e_s * np.sin(lane_relative_h)
     marker_dist_l = 25.02 - e_y
     if e_x < 180:
         _h, _y = get_lane_info('gneE05a_0', e_x)
         marker_dist_r = e_y - (_y - lane_width['gneE05a_0']/2/np.cos(_h))
     else:
         marker_dist_r = e_y - (3.49 - lane_width['gneE51_0']/2)
-    ego_info = np.array([e_x, e_y, lane_relative_h, lane_offset, e_l, e_w, e_sx, e_sy, marker_dist_l, marker_dist_r])
+    ego_info = np.array([
+        e_x, e_y, lane_relative_h, lane_offset, e_l, e_w, e_s_lane, e_s_lateral, e_s, marker_dist_l, marker_dist_r
+    ])
 
     # all info
     feature = np.concatenate((ego_info, dists, r_speeds_x, r_speeds_y, events))

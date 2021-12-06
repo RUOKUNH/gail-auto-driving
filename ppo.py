@@ -64,6 +64,7 @@ class PPO:
         random.shuffle(update_data)
         st = 0
         self.pnet.train()
+        self.collect_pnet.eval()
         while st < len(update_data):
             ed = st + self.mini_batch
             if ed > len(update_data):
@@ -76,6 +77,8 @@ class PPO:
                 _obs.append(_ob)
                 _acts.append(_act)
                 _advs.append(_adv)
+            if len(_obs) < 2:
+                break
             _obs, _acts = FloatTensor(_obs), FloatTensor(_acts)
             dist = self.pnet(_obs)
             old_dist = self.collect_pnet(_obs)

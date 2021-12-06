@@ -11,6 +11,7 @@ import torch.nn.functional as F
 import threading
 from threading import Lock
 from traffic_simulator import TrafficSim
+from torch import FloatTensor
 
 
 class GAIL_PPO:
@@ -49,8 +50,9 @@ class GAIL_PPO:
         done = False
         # pdb.set_trace()
         while step < max_step and not done:
+            # pdb.set_trace()
             ob = expert_collector2(ob)
-            ob = feature3(ob)
+            ob = feature2(ob)
             speed.append(ob[1])
             act = pnet(ob).sample()
             act = list(act.cpu().numpy())
@@ -134,7 +136,7 @@ class GAIL_PPO:
             speeds = []
             _step = [0]
             collects = 0
-            # self.t = time.time()
+            self.pi.eval()
             while collects < self.collectors:
                 try:
                     self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.pi, gamma)
@@ -165,12 +167,13 @@ class GAIL_PPO:
             for i in range(expert_samples):
                 sample = expert_buffer[batch_idx]
                 exp_obs = sample['observation']
-                exp_obs = [feature3(ob) for ob in exp_obs]
+                exp_obs = [feature2(ob) for ob in exp_obs]
                 train_buffer[0].append(exp_obs)
                 train_buffer[1].append(sample['actions'])
                 batch_idx += 1
                 if batch_idx >= len(expert_buffer):
                     batch_idx = 0
+            # pdb.set_trace()
             sample_count = 0
             for i in range(self.collectors):
                 if sample_count == generation_samples:
@@ -185,24 +188,14 @@ class GAIL_PPO:
             for i in range(self.collectors):
                 generation_obs.append(torch.FloatTensor(obs2[i]))
                 generation_act.append(torch.FloatTensor(acts2[i]))
-            # generation_obs = FloatTensor(generation_obs)
-            # generation_act = FloatTensor(generation_act)
             generation_rwd = [torch.FloatTensor(rwd) for rwd in rwds2]
             train_samples = min(len(train_buffer[0]), 10)
             expert_sample_idx = np.random.randint(0, len(train_buffer[0]), train_samples)
             expert_obs = []
             expert_act = []
             for i in expert_sample_idx:
-                # pdb.set_trace()
                 expert_obs += train_buffer[0][i]
                 expert_act += list(train_buffer[1][i])
-            # pdb.set_trace()
-            # expert_obs = FloatTensor(expert_obs)
-            # expert_act = FloatTensor(expert_act)
-            # exp_scores = self.d(expert_obs, expert_act)
-            # gen_scores = torch.cat(
-            #     [self.d(generation_obs[i], generation_act[i]) for i in range(len(generation_obs))]
-            # )
             expert_obs = FloatTensor(expert_obs)
             expert_act = FloatTensor(expert_act)
             gen_obs = torch.cat(generation_obs)
@@ -221,7 +214,7 @@ class GAIL_PPO:
                 _expert_act = expert_act[_exp_idx]
                 _gen_obs = gen_obs[_gen_idx]
                 _gen_act = gen_act[_gen_idx]
-                if _expert_obs.numel()==0 or _gen_obs.numel()==0:
+                if len(_expert_obs) < 2 or len(_gen_obs) < 2:
                     continue
                 exp_scores = self.d(_expert_obs, _expert_act)
                 gen_scores = self.d(_gen_obs, _gen_act)
@@ -250,14 +243,8 @@ class GAIL_PPO:
                 loss_v.backward()
                 opt_v.step()
 
-            # t2 = time.time() - t
-            # t = time.time()
-
             # PPO update Action net
             self.pi, _update = self.ppo.update(obs2, acts2, gamma, self.v, self.d)
-
-            # t3 = time.time() - t
-            # t = time.time()
 
             rwds2 = [np.sum(rwd) for rwd in rwds2]
 
@@ -293,13 +280,20 @@ class GAIL_PPO:
                 best_score = np.mean(score_list[-self.collectors:])
                 state = {'action_net': self.ppo.get_pnet().state_dict(),
                          'value_net': self.v.state_dict(),
-                         'disc_net': self.d.state_dict()}
+                         'disc_net': self.d.state_dict(),
+                         'net_dims': [self.ppo.get_pnet().net_dims,
+                                      self.v.net_dims,
+                                      self.d.net_dims]}
                 torch.save(state, 'bestmodel' + self.args.exp + '.pth')
 
             if _iter % 50 == 0:
                 state = {'action_net': self.ppo.get_pnet().state_dict(),
                          'value_net': self.v.state_dict(),
-                         'disc_net': self.d.state_dict()}
+                         'disc_net': self.d.state_dict(),
+                         'net_dims': [self.ppo.get_pnet().net_dims,
+                                      self.v.net_dims,
+                                      self.d.net_dims]
+                         }
                 torch.save(state, 'model' + self.args.exp + '.pth')
                 if not os.path.exists(f'scores{self.args.exp}.txt'):
                     score_dict = {self.args.exp: score_list}
@@ -316,13 +310,12 @@ class GAIL_PPO:
             t = time.time()
 
             print(
-                f"{self.args.exp}, reward at iter {_iter}: step{_step[0]}, ",
+                f"{self.args.exp}, iter {_iter}: step{_step[0]}, ",
                 "score: %.2f, %.2f, %.2f, " % (np.mean(rwds2), np.max(rwds2), np.min(rwds2)),
                 "m_speed: %.2f, " % np.mean(speeds),
                 "time: %.2f %.2f" % (t1, t4),
                 "d_loss %.3f, v_loss %.3f, " % (loss_d, loss_v),
                 f"ppo {_update}"
             )
-
 
         return self.ppo.get_pnet(), self.v, self.d
