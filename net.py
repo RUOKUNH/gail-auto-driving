@@ -18,24 +18,24 @@ class PolicyNetwork(torch.nn.Module):
     def __init__(self, state_dim, action_dim):
         super(PolicyNetwork, self).__init__()
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(state_dim, 96),
-            # torch.nn.ELU(),
+            torch.nn.Linear(state_dim, 256),
+            # torch.nn.Tanh(),
             torch.nn.ELU(),
-            torch.nn.Linear(96, 96),
-            # torch.nn.ELU(),
+            torch.nn.Linear(256, 128),
+            # torch.nn.Tanh(),
             torch.nn.ELU(),
-            torch.nn.Linear(96, 128),
-            # torch.nn.ELU(),
+            torch.nn.Linear(128, 64),
+            # torch.nn.Tanh(),
             torch.nn.ELU(),
-            torch.nn.Linear(128, 128),
+            torch.nn.Linear(64, 64),
             # torch.nn.Linear(state_dim, 64),
-            # torch.nn.ELU(),
+            # torch.nn.Tanh(),
             torch.nn.ELU(),
-            torch.nn.Linear(128, 256),
+            torch.nn.Linear(64, 32),
             # torch.nn.Linear(64, 128),
-            # torch.nn.ELU(),
+            # torch.nn.Tanh(),
             torch.nn.ELU(),
-            torch.nn.Linear(256, action_dim)
+            torch.nn.Linear(32, action_dim)
             # torch.nn.Linear(128, action_dim)
         )
         self.scale_net = torch.nn.Tanh()
@@ -43,7 +43,7 @@ class PolicyNetwork(torch.nn.Module):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.cov = 1
-        self.log_std = torch.nn.Parameter(torch.zeros(action_dim))
+        self.log_std = torch.nn.Parameter(torch.zeros(action_dim), requires_grad=True)
 
     def forward(self, states):
         # pdb.set_trace()
@@ -57,9 +57,9 @@ class PolicyNetwork(torch.nn.Module):
             mean[0] = torch.tanh(mean[0])
             mean[1] = torch.tanh(mean[0]) * 0.1
 
-        # cov_mtx = torch.FloatTensor([[5e-2, 0], [0, 25e-4]])
-        std = torch.exp(self.log_std)
-        cov_mtx = torch.eye(self.action_dim) * (std ** 2)
+        cov_mtx = torch.FloatTensor([[5e-2, 0], [0, 25e-4]])
+        # std = torch.exp(self.log_std)
+        # cov_mtx = torch.eye(self.action_dim) * (std ** 2)
 
         distb = torch.distributions.MultivariateNormal(mean, cov_mtx)
 
@@ -70,24 +70,24 @@ class ValueNetwork(torch.nn.Module):
     def __init__(self, state_dim):
         super(ValueNetwork, self).__init__()
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(state_dim, 96),
+            torch.nn.Linear(state_dim, 256),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(96, 96),
+            # torch.nn.RTanh(),
+            torch.nn.Linear(256, 128),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(96, 128),
+            # torch.nn.RTanh(),
+            torch.nn.Linear(128, 64),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(128, 128),
+            # torch.nn.RTanh(),
+            torch.nn.Linear(64, 32),
             # torch.nn.Linear(state_dim, 64),
-            torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(128, 256),
+            # torch.nn.ELU(),
+            # # torch.nn.RTanh(),
+            # torch.nn.Linear(64, 32),
             # torch.nn.Linear(64, 128),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(256, 1)
+            # torch.nn.RTanh(),
+            torch.nn.Linear(32, 1)
         )
 
     def forward(self, states):
@@ -105,24 +105,24 @@ class Discriminator(torch.nn.Module):
         self.net_in_dim = state_dim + action_dim
 
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(self.net_in_dim, 96),
+            torch.nn.Linear(self.net_in_dim, 256),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(96, 96),
+            # torch.nn.RTanh(),
+            torch.nn.Linear(256, 128),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(96, 128),
+            # torch.nn.RTanh(),
+            torch.nn.Linear(128, 64),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(128, 128),
+            # torch.nn.RTanh(),
+            torch.nn.Linear(64, 64),
             # torch.nn.Linear(state_dim, 64),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(128, 256),
+            # torch.nn.RTanh(),
+            torch.nn.Linear(64, 32),
             # torch.nn.Linear(64, 128),
             torch.nn.ELU(),
-            # torch.nn.ReLU(),
-            torch.nn.Linear(256, 1)
+            # torch.nn.RTanh(),
+            torch.nn.Linear(32, 1)
         )
 
     def forward(self, states, actions):

@@ -90,9 +90,9 @@ class GAIL:
                 ob = env.reset()
                 done = False
                 while step < max_step and not done:
-                    ob = expert_collector(ob)
+                    ob = expert_collector2(ob)
                     # ob = ob[:6]
-                    ob = feature_detection(ob)
+                    ob = feature3(ob)
                     speeds.append(ob[1])
                     act = self.pi(ob).sample()
                     act = list(act.cpu().numpy())
@@ -124,7 +124,7 @@ class GAIL:
                 for i in range(expert_samples):
                     sample = expert_buffer[batch_idx]
                     exp_obs = sample['observation']
-                    exp_obs = [feature_detection(ob) for ob in exp_obs]
+                    exp_obs = [feature3(ob) for ob in exp_obs]
                     train_buffer[0].append(exp_obs)
                     train_buffer[1].append(sample['actions'])
                     batch_idx += 1

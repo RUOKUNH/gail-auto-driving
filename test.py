@@ -12,7 +12,7 @@ from torch import FloatTensor
 import argparse
 
 def main():
-    exp = 'exp34'
+    exp = 'exp40'
     env = TrafficSim(["../scenarios/ngsim"])
     state_dim = 34
     action_dim = 2
@@ -35,17 +35,19 @@ def main():
         _obs = []
         t = time.time()
         ob = env.reset()
+        pdb.set_trace()
         done = False
         step = 0
         while not done and step <= 1000:
+            # pdb.set_trace()
             # print(time.time() - t)
             # t = time.time()
             step += 1
-            ob = expert_collector(ob)
+            ob = expert_collector2(ob)
             # print(time.time()-t)
             # t = time.time()
             _obs.append(ob)
-            ob = feature_detection(ob)
+            ob = feature3(ob)
             # print(time.time()-t)
             # t = time.time()
             act = pi(ob)
@@ -62,9 +64,9 @@ def main():
             lane_index.append(ob.ego_vehicle_state.lane_index)
             rwds.append(r)
 
-        print(time.time() - t)
-        t = time.time()
-        pdb.set_trace()
+        # print(time.time() - t)
+        # t = time.time()
+        # pdb.set_trace()
         lane_index = list(np.unique(lane_index))
         print(lane_index)
 

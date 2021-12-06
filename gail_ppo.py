@@ -49,8 +49,8 @@ class GAIL_PPO:
         done = False
         # pdb.set_trace()
         while step < max_step and not done:
-            ob = expert_collector(ob)
-            ob = new_feature_detection(ob)
+            ob = expert_collector2(ob)
+            ob = feature3(ob)
             speed.append(ob[1])
             act = pnet(ob).sample()
             act = list(act.cpu().numpy())
@@ -64,7 +64,6 @@ class GAIL_PPO:
             gammas1.append(gamma ** step)
 
             step += 1
-            # print(step)
 
         # self.collector_lock.acquire()
         obs.append(obs1)
@@ -143,10 +142,9 @@ class GAIL_PPO:
                 except:
                     continue
 
-            # t1 = time.time() - t
-            # t = time.time()
+            t1 = time.time() - t
+            t = time.time()
 
-            # score_list += [np.sum(rwd) for rwd in rwds2]
             score_list.append(np.mean([np.sum(rwd) for rwd in rwds2]))
 
             for rwd in rwds2:
@@ -167,7 +165,7 @@ class GAIL_PPO:
             for i in range(expert_samples):
                 sample = expert_buffer[batch_idx]
                 exp_obs = sample['observation']
-                exp_obs = [new_feature_detection(ob) for ob in exp_obs]
+                exp_obs = [feature3(ob) for ob in exp_obs]
                 train_buffer[0].append(exp_obs)
                 train_buffer[1].append(sample['actions'])
                 batch_idx += 1
@@ -205,23 +203,32 @@ class GAIL_PPO:
             # gen_scores = torch.cat(
             #     [self.d(generation_obs[i], generation_act[i]) for i in range(len(generation_obs))]
             # )
-
+            expert_obs = FloatTensor(expert_obs)
+            expert_act = FloatTensor(expert_act)
             gen_obs = torch.cat(generation_obs)
             gen_act = torch.cat(generation_act)
             exp_samples = len(expert_obs) // 10 + 1
             gen_samples = len(gen_obs) // 10 + 1
+            exp_idx = np.arange(len(expert_obs))
+            gen_idx = np.arange(len(gen_obs))
+            random.shuffle(exp_idx)
+            random.shuffle(gen_idx)
             self.d.train()
             for i in range(10):
-                _expert_obs = FloatTensor(expert_obs[i*exp_samples : (i+1)*exp_samples])
-                _expert_act = FloatTensor(expert_act[i*exp_samples : (i+1)*exp_samples])
-                _gen_obs = gen_obs[i*gen_samples : (i+1)*gen_samples]
-                _gen_act = gen_act[i*gen_samples : (i+1)*gen_samples]
+                _exp_idx = exp_idx[i*exp_samples : (i+1)*exp_samples]
+                _gen_idx = gen_idx[i*gen_samples : (i+1)*gen_samples]
+                _expert_obs = expert_obs[_exp_idx]
+                _expert_act = expert_act[_exp_idx]
+                _gen_obs = gen_obs[_gen_idx]
+                _gen_act = gen_act[_gen_idx]
+                if _expert_obs.numel()==0 or _gen_obs.numel()==0:
+                    continue
                 exp_scores = self.d(_expert_obs, _expert_act)
                 gen_scores = self.d(_gen_obs, _gen_act)
                 loss_d = torch.nn.functional.binary_cross_entropy(
-                    exp_scores, torch.zeros_like(exp_scores)
+                    exp_scores, torch.ones_like(exp_scores)
                 ) + torch.nn.functional.binary_cross_entropy(
-                    gen_scores, torch.ones_like(gen_scores)
+                    gen_scores, torch.zeros_like(gen_scores)
                 )
                 opt_d.zero_grad()
                 loss_d.backward()
@@ -231,7 +238,7 @@ class GAIL_PPO:
             self.d.eval()
             self.v.train()
             for i in range(len(generation_obs)):
-                costs = torch.log(self.d(generation_obs[i], generation_act[i])+1e-8).squeeze().detach()
+                costs = torch.log(1 - self.d(generation_obs[i], generation_act[i])+1e-8).squeeze().detach()
                 esti_rwds = -1 * costs
                 # take real reward in use
                 esti_rwds = 0.8 * esti_rwds + 0.2 * generation_rwd[i]
@@ -258,12 +265,12 @@ class GAIL_PPO:
             plt.savefig('rwd' + self.args.exp + '.png')
             plt.close()
 
-            state = {'action_net': self.ppo.get_pnet().state_dict(),
-                     'value_net': self.v.state_dict(),
-                     'disc_net': self.d.state_dict()}
-            saved_model.append(state)
-            if len(saved_model) > 20:
-                saved_model.pop(0)
+            # state = {'action_net': self.ppo.get_pnet().state_dict(),
+            #          'value_net': self.v.state_dict(),
+            #          'disc_net': self.d.state_dict()}
+            # saved_model.append(state)
+            # if len(saved_model) > 20:
+            #     saved_model.pop(0)
             # if _iter > 30 and np.mean(score_list[-5:]) < 60 and self.args.revert:
             #     # revert
             #     revert_count += 1
@@ -312,9 +319,9 @@ class GAIL_PPO:
                 f"{self.args.exp}, reward at iter {_iter}: step{_step[0]}, ",
                 "score: %.2f, %.2f, %.2f, " % (np.mean(rwds2), np.max(rwds2), np.min(rwds2)),
                 "m_speed: %.2f, " % np.mean(speeds),
-                "time: %.2f" % t4,
+                "time: %.2f %.2f" % (t1, t4),
                 "d_loss %.3f, v_loss %.3f, " % (loss_d, loss_v),
-                f"revert {revert_count}, ppo {_update}"
+                f"ppo {_update}"
             )
 
 

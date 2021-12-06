@@ -52,7 +52,7 @@ def main(scenario):
     # dataset_name = 'expert_simple_2.pkl' # [heading, speed, x, y, l, w, ....]
     # dataset_name = 'expert_simple_3.pkl'  # [heading, speed, x, y, l, w, ....(10 neighbor)]
     # dataset_name = 'expert_data.pkl'  # [heading, speed, x, y, l, w, nx,ny,nl,nw,nh,ns,....(4 neighbor)]
-    # dataset_name = 'expert_data3.pkl'
+    # dataset_name = 'expert_data3.pkl' # [ego_state, nx,ny,nl,nw,nh,ns,....(4 neighbor)]
     dataset_name = 'expert_data_full.pkl'
     """Collect expert observations.
 

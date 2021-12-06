@@ -10,7 +10,7 @@ from gail_ppo import GAIL_PPO
 def main(args):
     # expert_path = '../expert_simple_2.pkl'
     # expert_path = './expert_data.pkl'
-    expert_path = './expert_data3.pkl'
+    expert_path = './expert_data4.pkl'
     with open('config.json') as f:
         config = json.load(f)
 
@@ -18,7 +18,7 @@ def main(args):
     # env = TrafficSim(["./ngsim"])
     # print('env created')
     # state_dim = 34
-    state_dim = 27
+    state_dim = 38
     action_dim = 2
 
     if args.optim == 'trpo':
@@ -38,12 +38,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp',
                         help='experiment name',
+                        default='exp40',
                         type=str)
     parser.add_argument('--con',
                         help='whether continue with the experiment',
                         default=False,
                         type=bool)
     parser.add_argument('--optim',
+                        default='ppo',
                         type=str)
     args = parser.parse_args()
     main(args)
