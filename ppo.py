@@ -98,7 +98,7 @@ class PPO:
             self.collect_pnet.load_state_dict(self.pnet.state_dict())
             self.synchronize_step = 0
 
-        return self.collect_pnet, _update
+        return _update
 
     def get_pnet(self):
         return self.pnet

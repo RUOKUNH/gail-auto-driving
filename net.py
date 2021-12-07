@@ -11,63 +11,44 @@ def init_weights_xavier(m):
 init = 'xavier'
 # init = None
 
+# net 1
+# p_dims = [64, 64, 128, 256]
+# v_dims = [64, 64, 128]
+# d_dims = [64, 64, 128, 128, 256]
+
+# net 2
+# p_dims = [96, 96, 128, 128, 256]
+# v_dims = [96, 96, 128, 128, 256]
+# d_dims = [96, 96, 128, 128, 256]
+
+# net 3
+# p_dims = [64, 64, 128, 256]
+# v_dims = [96, 96, 128, 128, 256]
+# d_dims = [96, 96, 128, 128, 256]
+
+# net 4
+p_dims = [96, 96, 128, 128, 256]
+v_dims = [128] * 7
+d_dims = [128] * 7
+
+
 class PolicyNetwork(torch.nn.Module):
-    def __init__(self, state_dim, action_dim, use_bn=False, init=init):
+    def __init__(self, state_dim, action_dim):
         super(PolicyNetwork, self).__init__()
-        # self.net_dims = [64, 64, 128, 256]
-        self.net_dims = [96, 96, 128, 128, 256]
-        layers = [
-            torch.nn.Linear(state_dim, self.net_dims[0])
-        ]
-        if use_bn:
-            layers.append(torch.nn.BatchNorm1d(self.net_dims[0]))
-        layers.append(torch.nn.Tanh())
+        self.net_dims = p_dims
+        layers = [torch.nn.Linear(state_dim, self.net_dims[0]), torch.nn.LeakyReLU()]
         for i in range(len(self.net_dims)-1):
             layers.append(torch.nn.Linear(self.net_dims[i], self.net_dims[i+1]))
-            if use_bn:
-                layers.append(torch.nn.BatchNorm1d(self.net_dims[i+1]))
-            layers.append(torch.nn.Tanh())
+            layers.append(torch.nn.LeakyReLU())
         layers.append(torch.nn.Linear(self.net_dims[-1], action_dim))
         self.net = torch.nn.Sequential(*layers)
-        # self.net = torch.nn.Sequential(
-        #     torch.nn.Linear(state_dim, 64),
-        #     # torch.nn.BatchNorm1d(96),
-        #     # torch.nn.Tanh(),
-        #     # torch.nn.Linear(32, 64),
-        #     # torch.nn.BatchNorm1d(96),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(64, 64),
-        #     # torch.nn.BatchNorm1d(128),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(64, 128),
-        #     # torch.nn.BatchNorm1d(128),
-        #     # torch.nn.Linear(state_dim, 64),
-        #     # torch.nn.Tanh(),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(128, 256),
-        #     # torch.nn.BatchNorm1d(256),
-        #     # torch.nn.Linear(64, 128),
-        #     # torch.nn.Tanh(),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(256, action_dim)
-        #     # torch.nn.Linear(128, action_dim)
-        # )
 
         self.state_dim = state_dim
         self.action_dim = action_dim
 
-        if init == 'xavier':
-            # pdb.set_trace()
-            for module in self.modules():
-                init_weights_xavier(module)
-
     def forward(self, states):
-        _states = torch.FloatTensor(states)
-        if _states.ndim == 1:
-            _states = _states.view(1, -1)
-        mean = self.net(_states)
-        if states.ndim == 1:
-            mean = mean[0]
+        states = torch.FloatTensor(states)
+        mean = self.net(states)
 
         if mean.ndim > 1:
             mean[:, 0] = torch.tanh(mean[:, 0])
@@ -84,109 +65,53 @@ class PolicyNetwork(torch.nn.Module):
 
 
 class ValueNetwork(torch.nn.Module):
-    def __init__(self, state_dim, use_bn=False, init=init):
+    def __init__(self, state_dim):
         super(ValueNetwork, self).__init__()
-        # self.net_dims = [64, 64, 128]
-        self.net_dims = [96, 96, 128, 128, 256]
-        layers = [
-            torch.nn.Linear(state_dim, self.net_dims[0])
-        ]
-        if use_bn:
-            layers.append(torch.nn.BatchNorm1d(self.net_dims[0]))
-        layers.append(torch.nn.Tanh())
+        self.net_dims = v_dims
+        self.layers = torch.nn.ModuleList()
+        self.input = torch.nn.Linear(state_dim, self.net_dims[0])
         for i in range(len(self.net_dims)-1):
-            layers.append(torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]))
-            if use_bn:
-                layers.append(torch.nn.BatchNorm1d(self.net_dims[i + 1]))
-            layers.append(torch.nn.Tanh())
-        layers.append(torch.nn.Linear(self.net_dims[-1], 1))
-        self.net = torch.nn.Sequential(*layers)
-        # self.net = torch.nn.Sequential(
-        #     torch.nn.Linear(state_dim, 64),
-        #     # torch.nn.BatchNorm1d(96),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(64, 64),
-        #     # torch.nn.BatchNorm1d(128),
-        #     # torch.nn.Tanh(),
-        #     # torch.nn.Linear(128, 128),
-        #     # torch.nn.BatchNorm1d(128),
-        #     # torch.nn.Linear(state_dim, 64),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(64, 128),
-        #     # torch.nn.BatchNorm1d(256),
-        #     # torch.nn.Linear(64, 128),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(128, 1)
-        # )
+            self.layers.append(
+                torch.nn.Sequential(
+                    torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]),
+                    torch.nn.ReLU())
+            )
 
-        if init == 'xavier':
-            for module in self.modules():
-                init_weights_xavier(module)
+        self.output = torch.nn.Linear(self.net_dims[-1], 1)
 
     def forward(self, states):
-        _states = torch.FloatTensor(states)
-        if _states.ndim == 1:
-            _states = _states.view(1, -1)
-        val = self.net(_states)
-        if states.ndim == 1:
-            val = val[0]
-        return val
+        states = torch.FloatTensor(states)
+        x = self.input(states)
+        for layer in self.layers:
+            x = layer(x) + x
+        x = self.output(x)
+        return x
 
 
 class Discriminator(torch.nn.Module):
-    def __init__(self, state_dim, action_dim, use_bn=False, init=init):
+    def __init__(self, state_dim, action_dim):
         super(Discriminator, self).__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.net_in_dim = state_dim + action_dim
-        # self.net_dims = [64, 64, 128, 128, 256]
-        self.net_dims = [96, 96, 128, 128, 256]
-        layers = [
-            torch.nn.Linear(self.net_in_dim, self.net_dims[0])
-        ]
-        if use_bn:
-            layers.append(torch.nn.BatchNorm1d(self.net_dims[0]))
-        layers.append(torch.nn.Tanh())
+        self.net_dims = d_dims
+        self.input = torch.nn.Linear(self.net_in_dim, self.net_dims[0])
+        self.layers = torch.nn.ModuleList()
         for i in range(len(self.net_dims)-1):
-            layers.append(torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]))
-            if use_bn:
-                layers.append(torch.nn.BatchNorm1d(self.net_dims[i + 1]))
-            layers.append(torch.nn.Tanh())
-        layers.append(torch.nn.Linear(self.net_dims[-1], 1))
-        self.net = torch.nn.Sequential(*layers)
-
-        # self.net = torch.nn.Sequential(
-        #     torch.nn.Linear(self.net_in_dim, 64),
-        #     # torch.nn.BatchNorm1d(96),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(64, 64),
-        #     # torch.nn.BatchNorm1d(96),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(64, 128),
-        #     # torch.nn.BatchNorm1d(128),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(128, 128),
-        #     # torch.nn.BatchNorm1d(128),
-        #     # torch.nn.Linear(state_dim, 64),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(128, 256),
-        #     # torch.nn.BatchNorm1d(256),
-        #     # torch.nn.Linear(64, 128),
-        #     torch.nn.Tanh(),
-        #     torch.nn.Linear(256, 1)
-        # )
-
-        if init == 'xavier':
-            for module in self.modules():
-                init_weights_xavier(module)
+            self.layers.append(
+                torch.nn.Sequential(
+                    torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]),
+                    torch.nn.ReLU())
+            )
+        self.output = torch.nn.Linear(self.net_dims[-1], 1)
 
     def forward(self, states, actions):
         return torch.sigmoid(self.get_logits(states, actions))
 
     def get_logits(self, states, actions):
-        sa = torch.cat([states, actions], dim=-1)
-        if sa.ndim == 1:
-            sa = sa.view(1, -1)
-            return self.net(sa)[0]
-        else:
-            return self.net(sa)
+        x = torch.cat([states, actions], dim=-1)
+        x = self.input(x)
+        for layer in self.layers:
+            x = layer(x) + x
+        x = self.output(x)
+        return x

@@ -1,5 +1,4 @@
 import pdb
-
 import numpy as np
 import torch as torch
 
@@ -215,81 +214,56 @@ def expert_collector2(obs):
     return _obs
 
 
-# heading normalize to [-pi, pi)
-# record dist, relative speed-x, relative speed-y at eight directions
-def feature1(obs):
-    ego_state = obs[:6]
-    vehicles = []
-    for i in range(4):
-        vehicle_state = obs[6 * (i + 1): 6 * (i + 2)]
-        vehicles.append(vehicle_state)
-    e_h, e_s, e_x, e_y, e_l, e_w = ego_state
-    # ego_state[0] += np.pi / 2
-    # ego_state[0] = normalize(ego_state[0], -np.pi, np.pi, 2*np.pi)
-    e_h += np.pi / 2
-    e_h = normalize(e_h, -np.pi, np.pi, 2*np.pi)
-    e_sx = e_s * np.cos(e_h)
-    e_sy = e_s * np.sin(e_h)
-    e_corners = get_corners(e_x, e_y, e_l, e_w, e_h)
-    e_corners = np.array(e_corners)
-    e_max_y = np.max(e_corners[:, 1])
-    e_min_y = np.min(e_corners[:, 1])
-    e_max_x = np.max(e_corners[:, 0])
-    e_min_x = np.min(e_corners[:, 0])
-    feature = np.array([e_x, e_y, e_h, e_s, e_sx, e_sy, e_max_y, e_min_y, e_max_x, e_min_x])
-    radius_sample = 8
-    radius = np.arange(0, 2 * np.pi, 2 * np.pi / radius_sample)
-    e_dists = [get_cross_point_dist(e_x, e_y, r+e_h, e_corners, e_h) for r in radius]
-    # pdb.set_trace()
-    dists = np.ones(radius_sample) * 20
-    r_speeds_x = np.zeros(radius_sample)
-    r_speeds_y = np.zeros(radius_sample)
-    for vehicle_state in vehicles:
-        # pdb.set_trace()
-        if not np.any(vehicle_state):
-            continue
-        # vehicle_state[4] += np.pi / 2
-        # vehicle_state[4] = normalize(vehicle_state[4], -np.pi, np.pi, 2*np.pi)
-        x, y, l, w, heading, speed = vehicle_state
-        heading += np.pi / 2
-        heading = normalize(heading, -np.pi, np.pi, 2*np.pi)
-        corners = get_corners(x, y, l, w, heading)  # four corner of the boxing
-        corners = np.array(corners)
-        corner_angles = np.arctan((corners[:, 1] - e_y) / (corners[:, 0] - e_x + 1e-8))
-        corner_angles[(corners[:, 0] - e_x) < 0] += np.pi
-        corner_angles[corner_angles < 0] += 2*np.pi
-        r_angles = corner_angles - e_h  # corner angles relative to ego_heading
-        for i in range(len(r_angles)):
-            r_angles[i] = normalize(r_angles[i], 0, 2*np.pi, 2*np.pi)
-        # pdb.set_trace()
-        min_angle, max_angle = np.min(r_angles), np.max(r_angles)
-        for i in range(radius_sample):
-            r = radius[i]
-            if (max_angle-min_angle < np.pi) and (r<min_angle) or (r>max_angle):
-                continue
-            if (max_angle-min_angle > np.pi) and (min_angle < r <max_angle):
-                continue
-            # pdb.set_trace()
-            real_r = e_h + r
-            # pdb.set_trace()
-            dist = get_cross_point_dist(e_x, e_y, real_r, corners, heading)
-            dist -= e_dists[i]
-            # pdb.set_trace()
-            if dist < dists[i]:
-                dists[i] = dist
-                r_speeds_x[i] = speed * np.cos(heading) - e_s * np.cos(e_h)
-                r_speeds_y[i] = speed * np.sin(heading) - e_s * np.sin(e_h)
-    feature = np.concatenate((feature, dists, r_speeds_x, r_speeds_y))
-    return feature
+# 8 nearest neighbors
+def expert_collector3(obs):
+    _obs = []
+    ego_state = obs.ego_vehicle_state
+    neighbors = obs.neighborhood_vehicle_states
+    neighbor_idx = np.arange(len(neighbors))
+    x, y = ego_state.position[:2]
+    l = ego_state.bounding_box.length
+    w = ego_state.bounding_box.width
+    heading = ego_state.heading.real
+    speed = ego_state.speed
+    _obs = [ego_state]
+    neighbor_position = np.array([n.position[:2] for n in neighbors])
+    if len(neighbor_position) > 0:
+        dist = np.sqrt((neighbor_position[:, 0] - x) ** 2 + (neighbor_position[:, 1] - y) ** 2)
+        nei_dist = [(neighbor_idx[i], dist[i]) for i in neighbor_idx]
+        nei_dist.sort(key=lambda x: x[1])
+    # closest 8 neighbors
+    neighbor_num = 8
+    l = min(len(neighbor_position), neighbor_num)
+    for i in range(l):
+        n = neighbors[nei_dist[i][0]]
+        n_x, n_y = n.position[:2]
+        n_l = n.bounding_box.length
+        n_w = n.bounding_box.width
+        n_heading = n.heading
+        n_speed = n.speed
+        _obs += [n_x, n_y, n_l, n_w, n_heading, n_speed]
+    for i in range(l, neighbor_num):
+        _obs += [0, 0, 0, 0, 0, 0]
+    events = [0] * 4
+    Event = obs.events
+    if len(Event.collisions) > 0:
+        events[0] = 1
+    if Event.off_road:
+        events[1] = 1
+    if ego_state.speed < 0:
+        events[2] = 1
+    if np.pi/2 < normalize(ego_state.heading + np.pi/2, 0, np.pi*2, np.pi*2) < np.pi/2*3:
+        events[3] = 1
+    _obs += events
+    return _obs
 
 
 # heading normalize to [-pi, pi)
 # record dist, relative speed-x, relative speed-y at four directions, line id (-1, 0, 1)
 def feature2(obs):
-    # ego_state = obs[:6]
     ego_state = obs[0]
     vehicles = []
-    for i in range(4):
+    for i in range(8):
         vehicle_state = obs[6 * i + 1: 6 * i + 7]
         vehicles.append(vehicle_state)
     e_x, e_y = ego_state.position[:2]
@@ -309,7 +283,9 @@ def feature2(obs):
     e_min_y = np.min(e_corners[:, 1])
     e_max_x = np.max(e_corners[:, 0])
     e_min_x = np.min(e_corners[:, 0])
-    feature = np.array([e_x, e_y, e_h, e_s, e_sx, e_sy, e_max_y, e_min_y, e_max_x, e_min_x])
+    feature = np.array([
+        e_x / 100, e_y / 10, e_h, e_s / 10, e_sx / 10, e_sy / 10, e_max_y / 10,
+        e_min_y / 10, e_max_x / 100, e_min_x / 100])
     radius_sample = 8
     radius = np.arange(0, 2 * np.pi, 2 * np.pi / radius_sample)
     e_dists = [get_cross_point_dist(e_x, e_y, r+e_h, e_corners, e_h) for r in radius]
@@ -348,6 +324,9 @@ def feature2(obs):
                 r_speeds_y[i] = speed * np.sin(heading) - e_s * np.sin(e_h)
     ego_land_index = np.zeros(5)
     ego_land_index[land_index] = 1
+    dists /= 20
+    r_speeds_x /= 10
+    r_speeds_y /= 10
     feature = np.concatenate((feature, dists, r_speeds_x, r_speeds_y))
     return feature
 
@@ -355,7 +334,7 @@ def feature2(obs):
 def feature3(obs):
     ego_state = obs[0]
     vehicles = []
-    for i in range(4):
+    for i in range(8):
         vehicle_state = obs[6 * i + 1: 6 * i + 7]
         vehicles.append(vehicle_state)
     events = obs[-4:]
@@ -429,8 +408,12 @@ def feature3(obs):
     else:
         marker_dist_r = e_y - (3.49 - lane_width['gneE51_0']/2)
     ego_info = np.array([
-        e_x, e_y, lane_relative_h, lane_offset, e_l, e_w, e_s_lane, e_s_lateral, e_s, marker_dist_l, marker_dist_r
+        e_x / 100, e_y / 10, lane_relative_h, lane_offset / 2, e_l / 4, e_w / 2, e_s_lane / 10, e_s_lateral / 10,
+        e_s / 10, marker_dist_l / 10, marker_dist_r / 10
     ])
+    dists /= 20
+    r_speeds_x /= 10
+    r_speeds_y /= 10
 
     # all info
     feature = np.concatenate((ego_info, dists, r_speeds_x, r_speeds_y, events))

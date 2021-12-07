@@ -8,12 +8,12 @@ from gail_ppo import GAIL_PPO
 
 
 def main(args):
-    expert_path = './expert_data4.pkl'
+    expert_path = './expert_data5.pkl'
     with open('config.json') as f:
         config = json.load(f)
 
-    # state_dim = 34  # feature2
-    state_dim = 39    # feature3
+    state_dim = 34  # feature2
+    # state_dim = 39    # feature3
     action_dim = 2
 
     if args.optim == 'trpo':
