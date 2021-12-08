@@ -106,8 +106,8 @@ def conjugate_gradient(Av_func, b, max_iter=50, residual_tol=1e-10):
 def kl_divergence(dist, old_dist, action_dim):
     old_mean = old_dist.mean.detach()
     old_cov = old_dist.covariance_matrix.sum(-1).detach()
-    mean = dist.mean
-    cov = dist.covariance_matrix.sum(-1)
+    mean = dist.mean.detach()
+    cov = dist.covariance_matrix.sum(-1).detach()
     return 0.5 * ((old_cov / cov).sum(-1)
                   + (((old_mean - mean) ** 2) / cov).sum(-1)
                   - action_dim

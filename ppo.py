@@ -9,7 +9,7 @@ from net import *
 
 
 class PPO:
-    def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=5, mini_batch=100):
+    def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=1, mini_batch=100):
         self.collect_pnet = PolicyNetwork(state_dim, action_dim)
         self.pnet = PolicyNetwork(state_dim, action_dim)
         self.optimizer = torch.optim.Adam(self.pnet.parameters())
@@ -18,6 +18,15 @@ class PPO:
         self.mini_batch = mini_batch
         self.n_step = n_step
         self.config = config
+        self.action_dim = action_dim
+        self.state_dim = state_dim
+
+    def L(self, dist, old_dist, acts, advs):
+        adl = (advs * torch.exp(
+            dist.log_prob(acts)
+            - old_dist.log_prob(acts).detach()
+        )).mean()
+        return adl
 
     def L_clip(self, advs, ratio, epsilon=0.2):
         rated_advs = 0
@@ -38,7 +47,24 @@ class PPO:
         rated_advs /= len(advs)
         return -rated_advs, _grad
 
-    def update(self, obs, acts, gamma, vnet, dnet):
+    def rescale_and_line_search(self, old_dist, new_param, old_param, obs):
+        d_param = new_param - old_param
+        alpha = 1.0
+        for _ in range(10):
+            new_param = old_param + alpha * d_param
+            set_params(self.pnet, new_param)
+            dist = self.pnet(obs)
+            kld = kl_divergence(dist, old_dist, self.action_dim)
+            if kld < 0.1:
+                return
+            else:
+                print(kld)
+                alpha *= 0.7
+        set_params(self.pnet, old_param)
+        print('step too large')
+
+
+    def update(self, obs, acts, gamma, vnet, dnet, epoches=5, kld_limit=False):
         self.synchronize_step += 1
         ######### update ########
         _update = False
@@ -62,38 +88,42 @@ class PPO:
                 advs += gamma**k * rwds[k:k+len(curr_val)]
             for k in range(len(advs)):
                 update_data.append((list(ob[k]), list(act[k]), advs[k]))
-        random.shuffle(update_data)
-        st = 0
-        self.pnet.train()
-        self.collect_pnet.eval()
-        while st < len(update_data):
-            ed = st + self.mini_batch
-            if ed > len(update_data):
-                ed = len(update_data)
-            batch_data = update_data[st:ed]
-            _advs = []
-            _obs = []
-            _acts = []
-            for _ob, _act, _adv in batch_data:
-                _obs.append(_ob)
-                _acts.append(_act)
-                _advs.append(_adv)
-            if len(_obs) < 2:
-                break
-            _obs, _acts = FloatTensor(_obs), FloatTensor(_acts)
-            dist = self.pnet(_obs)
-            old_dist = self.collect_pnet(_obs)
-            _ratio = torch.exp(dist.log_prob(_acts)
-                               - old_dist.log_prob(_acts).detach())
-            loss, _grad = self.L_clip(_advs, _ratio)
-            # dist_causal_entropy = self.config['lambda_'] * (-1 * self.pnet(_obs).log_prob(_acts)).mean()
-            # loss -= dist_causal_entropy
-            if _grad:
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-                _update = True
-            st = ed
+        for epoch in range(epoches):
+            random.shuffle(update_data)
+            st = 0
+            self.pnet.train()
+            self.collect_pnet.eval()
+            while st < len(update_data):
+                ed = st + self.mini_batch
+                if ed > len(update_data):
+                    ed = len(update_data)
+                batch_data = update_data[st:ed]
+                _advs = []
+                _obs = []
+                _acts = []
+                for _ob, _act, _adv in batch_data:
+                    _obs.append(_ob)
+                    _acts.append(_act)
+                    _advs.append(_adv)
+                if len(_obs) < 2:
+                    break
+                _obs, _acts = FloatTensor(_obs), FloatTensor(_acts)
+                dist = self.pnet(_obs)
+                old_dist = self.collect_pnet(_obs)
+                _ratio = torch.exp(dist.log_prob(_acts)
+                                   - old_dist.log_prob(_acts).detach())
+                loss, _grad = self.L_clip(_advs, _ratio)
+                # dist_causal_entropy = self.config['lambda_'] * (-1 * self.pnet(_obs).log_prob(_acts)).mean()
+                # loss -= dist_causal_entropy
+                if _grad:
+                    old_param = get_flat_params(self.pnet)
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
+                    new_param = get_flat_params(self.pnet)
+                    if kld_limit:
+                        self.rescale_and_line_search(dist, new_param, old_param, _obs)
+                st = ed
         #########################
         if self.synchronize_step >= self.synchronize_steps:
             self.collect_pnet.load_state_dict(self.pnet.state_dict())
@@ -102,7 +132,7 @@ class PPO:
         else:
             synchronize = 0
 
-        return _update, synchronize
+        return synchronize
 
     def get_pnet(self):
         return self.pnet

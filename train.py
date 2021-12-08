@@ -23,6 +23,12 @@ def main(args):
     # state_dim = 22  # feature5
     # feature = feature5
 
+    kld_limit = False
+    # kld_limit = True
+
+    synchronize = 5
+    epoch = 10
+
     action_dim = 2
     ############################
 
@@ -32,9 +38,9 @@ def main(args):
     if args.optim == 'trpo':
         model = GAIL(state_dim, action_dim, config, args)
     else:
-        model = GAIL_PPO(state_dim, action_dim, config, args)
+        model = GAIL_PPO(state_dim, action_dim, config, args, synchronize=synchronize)
 
-    model.train(expert_path, feature)
+    model.train(expert_path, feature, kld_limit=kld_limit, epoch=epoch)
 
 
 if __name__ == '__main__':

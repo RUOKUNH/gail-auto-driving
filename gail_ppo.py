@@ -23,12 +23,13 @@ class GAIL_PPO:
             train_config,
             args,
             collectors=5,
+            synchronize=1,
     ):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.train_config = train_config
 
-        self.ppo = PPO(state_dim, action_dim, train_config)
+        self.ppo = PPO(state_dim, action_dim, train_config, synchronize_steps=synchronize)
         self.v = ValueNetwork(self.state_dim)
         self.d = Discriminator(self.state_dim, self.action_dim)
 
@@ -48,11 +49,15 @@ class GAIL_PPO:
         ob = self.env.reset()
         done = False
         while step < max_step and not done:
+            # pdb.set_trace()
+            _speed = ob.ego_vehicle_state.speed
             ob = expert_collector3(ob)
             ob = feature(ob)
             speed.append(ob[1])
             act = pnet(ob).sample()
             act = list(act.cpu().numpy())
+            if _speed <= 0:
+                act[0] = max(0, act[0])
 
             obs1.append(ob)
             acts1.append(act)
@@ -73,21 +78,22 @@ class GAIL_PPO:
         speeds += speed
         # self.collector_lock.release()
 
-    def train(self, expert_path, feature):
+    def train(self, expert_path, feature, kld_limit, epoch):
         if not os.path.exists(f'{self.args.exp}'):
             os.mkdir(f'{self.args.exp}')
         best_score = -np.inf
-        if self.args.con:
-            model = torch.load('model' + self.args.exp + '.pth')
-            self.ppo.pnet.load_state_dict(model['action_net'])
-            self.ppo.collect_pnet.load_state_dict(model['action_net'])
-            self.v.load_state_dict(model['value_net'])
-            self.d.load_state_dict(model['disc_net'])
-            with open('scores.txt', 'rb') as pkf:
-                scores_dict = pkl.load(pkf)
-                score_list = scores_dict[self.args.exp]
-        else:
-            score_list = []
+        # if self.args.con:
+        #     model = torch.load('model' + self.args.exp + '.pth')
+        #     self.ppo.pnet.load_state_dict(model['action_net'])
+        #     self.ppo.collect_pnet.load_state_dict(model['action_net'])
+        #     self.v.load_state_dict(model['value_net'])
+        #     self.d.load_state_dict(model['disc_net'])
+        #     with open('scores.txt', 'rb') as pkf:
+        #         scores_dict = pkl.load(pkf)
+        #         score_list = scores_dict[self.args.exp]
+        # else:
+        #     score_list = []
+        score_list = []
         d_loss_list = []
         v_loss_list = []
         d_value_list = []
@@ -142,7 +148,8 @@ class GAIL_PPO:
             self.ppo.collect_pnet.eval()
             while collects < self.collectors:
                 try:
-                    self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.ppo.collect_pnet, gamma, feature)
+                    self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.ppo.collect_pnet, gamma,
+                                 feature)
                     collects += 1
                 except:
                     continue
@@ -225,13 +232,14 @@ class GAIL_PPO:
                 exp_act_buffer += act
             exp_obs_buffer = torch.Tensor(exp_obs_buffer)
             exp_act_buffer = torch.Tensor(exp_act_buffer)
-            iters = min(len(gen_obs_buffer)//500 + 1, 20)
+            iters = min(len(gen_obs_buffer) // 500 + 1, 25)
             d_loss = 0
             np.random.seed()
             self.d.train()
             for _ in range(iters):
                 gen_idx = torch.from_numpy(np.random.randint(0, len(gen_obs_buffer), 200).astype(np.int64))
                 exp_idx = torch.from_numpy(np.random.randint(0, len(exp_obs_buffer), 200).astype(np.int64))
+                expert_obs = exp_obs_buffer[exp_idx].clone()
                 expert_obs = exp_obs_buffer[exp_idx].clone()
                 expert_act = exp_act_buffer[exp_idx].clone()
                 gen_obs = gen_obs_buffer[gen_idx].clone()
@@ -259,17 +267,18 @@ class GAIL_PPO:
             self.d.eval()
             self.v.train()
             v_loss = 0
-            iters = min(10, len(gen_obs_buffer2)//10 + 1)
+            iters = min(25, len(gen_obs_buffer2) // 10 + 1)
             gen_idx = np.random.randint(0, len(gen_obs_buffer2), iters)
             exp_idx = np.random.randint(0, len(expert_buffer), iters)
-            esti_rwd_buffer = []
+            d_value_buffer = []
             for it in range(iters):
                 gen_obs = torch.FloatTensor(gen_obs_buffer2[gen_idx[it]])
                 gen_act = torch.FloatTensor(gen_act_buffer2[gen_idx[it]])
                 gen_act[:, -1] *= 10
                 costs = torch.log(1 - self.d(gen_obs, gen_act)).squeeze().detach()
                 esti_rwds = -1 * costs
-                esti_rwd_buffer.append(torch.mean(esti_rwds).detach().numpy())
+                if not (torch.isnan(torch.mean(esti_rwds)) or torch.isinf(torch.mean(esti_rwds))):
+                    d_value_buffer.append(torch.mean(esti_rwds).detach().numpy())
                 # take real reward in use
                 # esti_rwds = 0.8 * esti_rwds + 0.2 * generation_rwd[i]
                 esti_v = self.v(gen_obs).view(-1)
@@ -296,14 +305,20 @@ class GAIL_PPO:
                     opt_v.step()
                     v_loss += loss_v
 
-            d_value_list.append(np.mean(esti_rwd_buffer))
+            if len(d_value_buffer) > 0:
+                d_value_list.append(np.mean(d_value_buffer))
 
             v_loss /= (iters * 2)
             v_loss *= 1000
             v_loss_list.append(v_loss)
 
             # PPO update Action net
-            _update, synchronize = self.ppo.update(collect_obs_buffer, collect_act_buffer, gamma, self.v, self.d)
+            if _iter <= 10:
+                synchronize = self.ppo.update(collect_obs_buffer, collect_act_buffer, gamma, self.v, self.d,
+                                              kld_limit=True, epoches=epoch)
+            else:
+                synchronize = self.ppo.update(collect_obs_buffer, collect_act_buffer, gamma, self.v, self.d,
+                                              kld_limit=False, epoches=epoch)
 
             if synchronize:
                 collect_act_buffer = []
@@ -329,7 +344,6 @@ class GAIL_PPO:
             plt.plot(np.arange(len(d_value_list)), d_value_list)
             plt.savefig(f'{self.args.exp}/dvalue.png')
             plt.close()
-
 
             # state = {'action_net': self.ppo.get_pnet().state_dict(),
             #          'value_net': self.v.state_dict(),
@@ -374,14 +388,14 @@ class GAIL_PPO:
                                       self.d.net_dims]
                          }
                 torch.save(state, f'{self.args.exp}/model{self.args.exp}.pth')
-                if not os.path.exists(f'scores{self.args.exp}.txt'):
-                    score_dict = {self.args.exp: score_list}
-                else:
-                    with open(f'scores{self.args.exp}.txt', 'rb') as pkf:
-                        score_dict = pkl.load(pkf)
-                    score_dict[self.args.exp] = score_list
-                with open(f'scores{self.args.exp}.txt', 'wb') as pkf:
-                    pkl.dump(score_dict, pkf)
+                # if not os.path.exists(f'scores{self.args.exp}.txt'):
+                #     score_dict = {self.args.exp: score_list}
+                # else:
+                #     with open(f'scores{self.args.exp}.txt', 'rb') as pkf:
+                #         score_dict = pkl.load(pkf)
+                #     score_dict[self.args.exp] = score_list
+                # with open(f'scores{self.args.exp}.txt', 'wb') as pkf:
+                #     pkl.dump(score_dict, pkf)
 
             t4 = time.time() - t
             t = time.time()
@@ -391,6 +405,5 @@ class GAIL_PPO:
                 "score: %.2f, %.2f, %.2f, " % (np.mean(rwds2), np.max(rwds2), np.min(rwds2)),
                 "m_speed: %.2f, " % np.mean(speeds),
                 "time: %.2f %.2f" % (t1, t4),
-                "d_loss %.3f, v_loss %.3f, " % (d_loss, v_loss),
-                f"ppo {_update}"
+                "dloss %.3f, vloss %.3f, dvalue %.3f" % (d_loss, v_loss, d_value_list[-1]),
             )

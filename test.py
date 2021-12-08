@@ -12,10 +12,12 @@ from torch import FloatTensor
 import argparse
 
 def main():
-    exp = 'exp54'
+    exp = 'exp61'
     env = TrafficSim(["../scenarios/ngsim"])
-    state_dim = 34
+    # feature4
+    state_dim = 23
     action_dim = 2
+    feature = feature4
 
     pi = PolicyNetwork(state_dim, action_dim)
     # model_path = 'bestmodel'+exp+'.pth'
@@ -41,7 +43,7 @@ def main():
             step += 1
             ob = expert_collector3(ob)
             _obs.append(ob)
-            ob = feature2(ob)
+            ob = feature(ob)
             act = pi(ob)
             act = act.sample()
             act = list(act.cpu().numpy())
@@ -53,8 +55,8 @@ def main():
 
         obs = torch.FloatTensor(obs)
         acts = torch.FloatTensor(acts)
-        print(-torch.log(1-d(obs, acts)))
-        print(v(obs))
+        # print(-torch.log(1-d(obs, acts)))
+        # print(v(obs))
         # print(acts)
         pdb.set_trace()
 
