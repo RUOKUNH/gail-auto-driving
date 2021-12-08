@@ -27,28 +27,45 @@ init = 'xavier'
 # d_dims = [96, 96, 128, 128, 256]
 
 # net 4
-p_dims = [96, 96, 128, 128, 256]
-v_dims = [128] * 7
-d_dims = [128] * 7
+# p_dims = [96, 96, 128, 128, 256]
+# v_dims = [128] * 7
+# d_dims = [128] * 7
+
+# net 5
+# p_dims = [128] * 5
+# v_dims = [128] * 7
+# d_dims = [128] * 7
+
+# net 6
+p_dims = [128] * 4
+v_dims = [128] * 4
+d_dims = [128] * 4
 
 
 class PolicyNetwork(torch.nn.Module):
     def __init__(self, state_dim, action_dim):
         super(PolicyNetwork, self).__init__()
         self.net_dims = p_dims
-        layers = [torch.nn.Linear(state_dim, self.net_dims[0]), torch.nn.LeakyReLU()]
-        for i in range(len(self.net_dims)-1):
-            layers.append(torch.nn.Linear(self.net_dims[i], self.net_dims[i+1]))
-            layers.append(torch.nn.LeakyReLU())
-        layers.append(torch.nn.Linear(self.net_dims[-1], action_dim))
-        self.net = torch.nn.Sequential(*layers)
+        self.layers = torch.nn.ModuleList()
+        self.input = torch.nn.Linear(state_dim, self.net_dims[0])
+        for i in range(len(self.net_dims) - 1):
+            self.layers.append(
+                torch.nn.Sequential(
+                    torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]),
+                    torch.nn.ELU())
+            )
+
+        self.output = torch.nn.Linear(self.net_dims[-1], action_dim)
 
         self.state_dim = state_dim
         self.action_dim = action_dim
 
     def forward(self, states):
         states = torch.FloatTensor(states)
-        mean = self.net(states)
+        x = self.input(states)
+        for layer in self.layers:
+            x = layer(x) + x
+        mean = self.output(x)
 
         if mean.ndim > 1:
             mean[:, 0] = torch.tanh(mean[:, 0])
@@ -74,7 +91,7 @@ class ValueNetwork(torch.nn.Module):
             self.layers.append(
                 torch.nn.Sequential(
                     torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]),
-                    torch.nn.ReLU())
+                    torch.nn.ELU())
             )
 
         self.output = torch.nn.Linear(self.net_dims[-1], 1)
@@ -101,7 +118,7 @@ class Discriminator(torch.nn.Module):
             self.layers.append(
                 torch.nn.Sequential(
                     torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]),
-                    torch.nn.ReLU())
+                    torch.nn.ELU())
             )
         self.output = torch.nn.Linear(self.net_dims[-1], 1)
 

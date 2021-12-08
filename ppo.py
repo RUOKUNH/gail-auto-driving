@@ -9,7 +9,7 @@ from net import *
 
 
 class PPO:
-    def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=1, mini_batch=100):
+    def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=5, mini_batch=100):
         self.collect_pnet = PolicyNetwork(state_dim, action_dim)
         self.pnet = PolicyNetwork(state_dim, action_dim)
         self.optimizer = torch.optim.Adam(self.pnet.parameters())
@@ -51,6 +51,7 @@ class PPO:
                 continue
             act = acts[i]
             ob, act = FloatTensor(ob), FloatTensor(act)
+            act[:, -1] *= 10
             costs = torch.log(dnet(ob, act)).squeeze().detach()
             rwds = -1 * costs
             curr_val = vnet(ob).detach().view(-1)
@@ -97,8 +98,11 @@ class PPO:
         if self.synchronize_step >= self.synchronize_steps:
             self.collect_pnet.load_state_dict(self.pnet.state_dict())
             self.synchronize_step = 0
+            synchronize = 1
+        else:
+            synchronize = 0
 
-        return _update
+        return _update, synchronize
 
     def get_pnet(self):
         return self.pnet

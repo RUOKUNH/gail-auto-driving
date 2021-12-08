@@ -1,5 +1,5 @@
 import pdb
-
+from net import *
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ def init_weights_xavier(m):
 class FIT(nn.Module):
     def __init__(self, vector_size):
         super().__init__()
-        hidden = [128] * 7
+        hidden = [128] * 4
         self.hidden = hidden
         self.input = nn.Sequential(
                 # nn.BatchNorm1d(vector_size),
@@ -31,7 +31,7 @@ class FIT(nn.Module):
             self.layers.append(
                 nn.Sequential(
                     # nn.LayerNorm(hidden[i]),
-                    nn.ReLU(),
+                    nn.ELU(),
                     nn.Linear(hidden[i], hidden[i + 1]),
                 )
             )
@@ -45,7 +45,8 @@ class FIT(nn.Module):
             x = layer(x) + x
             # x = layer(x)
         x = self.output(x)
-        x = torch.sigmoid(x)
+        x = torch.tanh(x)
+        # x = torch.sigmoid(x)
         # x = x-0.5
         return x
 
@@ -59,7 +60,7 @@ weight = np.array([-1.6541483 ,  1.6964793 ,  0.7340574 , -3.096751  , -4.365757
         2.3997731 , -3.1243215 ,  3.4392948 , -1.5711551 ,  3.5670576 ,
        -3.357282  ,  4.3879614 ,  0.67608166, -1.375834  , -4.318674  ],
       dtype=np.float32)
-weight = torch.from_numpy(weight)
+weight = torch.from_numpy(weight)[:23]
 
 
 def func(x):
@@ -69,8 +70,8 @@ def func(x):
     x = torch.tanh(x) + x ** 2 / 100
     x = torch.exp(x) - 3
     x = torch.sigmoid(x)
-    x[x >= 0.5] = 1
-    x[x < 0.5] = 0
+    # x[x >= 0.5] = 1
+    # x[x < 0.5] = 0
     # x *= 10
 
     return x
@@ -80,7 +81,7 @@ device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('
 
 
 def train():
-    vector_size = 40
+    vector_size = 23
     model = FIT(vector_size)
     iter = 10000
     optimizer = torch.optim.Adam(model.parameters())
@@ -89,49 +90,80 @@ def train():
     model.train()
     data = torch.from_numpy(np.random.random((4000, vector_size)).astype(np.float32) * 4 - 2)
     # np.random.seed()
-    for k in range(400):
+    for k in range(800):
         new_data = torch.from_numpy(np.random.random((400, vector_size)).astype(np.float32) * 4 - 2)
         data = torch.cat([data, new_data])[-4000:]
         label = func(data)
         np.random.seed()
-        for i in range(100):
-            idx = torch.from_numpy(np.random.randint(0, 4000, 100).astype(np.int64))
-            input = data[idx]
+        for i in range(10):
+            idx = torch.from_numpy(np.random.randint(0, 4000, 200).astype(np.int64))
+            input = torch.from_numpy(np.random.random((200, vector_size)).astype(np.float32) * 4 - 2)
+            # input = data[idx]
             output = model(input).reshape(-1)
-            # pdb.set_trace()
-            target = label[idx]
-            idx_0 = (target == 0)
-            idx_1 = (target == 1)
-            output_0 = output[idx_0]
-            output_1 = output[idx_1]
-            _loss = torch.nn.functional.binary_cross_entropy(
-                output_1, torch.ones_like(output_1)
-            ) + torch.nn.functional.binary_cross_entropy(
-                output_0, torch.zeros_like(output_0)
-            )
-            if torch.isnan(_loss):
+            target = func(input)
+            # target = label[idx]
+            # idx_0 = (target == 0)
+            # idx_1 = (target == 1)
+            # output_0 = output[idx_0]
+            # output_1 = output[idx_1]
+            # _los = torch.nn.functional.binary_cross_entropy(
+            #     output_1, torch.ones_like(output_1)
+            # ) + torch.nn.functional.binary_cross_entropy(
+            #     output_0, torch.zeros_like(output_0)
+            # )s
+            _loss = torch.nn.functional.mse_loss(output, target)
+            if torch.isnan(_loss) or torch.isinf(_loss):
                 continue
-            # _loss = torch.nn.functional.mse_loss(output, target)
+            if not torch.isfinite(_loss):
+                continue
             optimizer.zero_grad()
             _loss.backward()
             optimizer.step()
             loss.append(float(_loss))
         # pdb.set_trace()
         print(f'iter {k} loss {np.mean(loss[-50:])}')
-    with torch.no_grad():
-        x = torch.zeros(10000, 40)
-        x[:, 0] = torch.from_numpy(np.linspace(-2, 2, 10000).astype(np.float32))
-        y = func(x)
-        pred = model(x).reshape(-1)
-        # pdb.set_trace()
-        pred = list(pred)
-        plt.plot(np.linspace(-2, 2, 10000).astype(np.float32), pred)
-        plt.plot(np.linspace(-2, 2, 10000).astype(np.float32), y)
-        plt.show()
-        plt.plot(np.arange(len(loss)-50), loss[50:])
-        plt.show()
+        if k % 50 == 0:
+            with torch.no_grad():
+                x = torch.zeros(10000, vector_size)
+                x[:, 0] = torch.from_numpy(np.linspace(-2, 2, 10000).astype(np.float32))
+                x[:, 1:] = torch.from_numpy(np.random.random(vector_size-1).astype(np.float32)*0.5-0.25)
+                y = func(x)
+                pred = model(x).reshape(-1)
+                # pdb.set_trace()
+                pred = list(pred)
+                plt.plot(np.linspace(-2, 2, 10000).astype(np.float32), pred)
+                plt.plot(np.linspace(-2, 2, 10000).astype(np.float32), y)
+                plt.show()
+                plt.plot(np.arange(len(loss)-50), loss[50:])
+                plt.show()
+
+
+def show_net():
+    state_dim = 23
+    action_dim = 2
+    x = torch.zeros((1000, state_dim+action_dim))
+    x[:, -10] = torch.from_numpy(np.linspace(0, 1, 1000).astype(np.float32)*2-1)
+    # x[:, -2] = x[:, 0]
+    # x[:, -1] = x[:, 0]
+    d = Discriminator(state_dim, action_dim)
+    v = ValueNetwork(state_dim)
+    pi = PolicyNetwork(state_dim, action_dim)
+    exp = ''
+    model_path = 'model' + exp + '.pth'
+    model = torch.load(model_path, map_location=torch.device('cpu'))
+    d.load_state_dict(model['disc_net'])
+    v.load_state_dict(model['value_net'])
+    # pi.load_state_dict(model['action_net'])
+    d.eval()
+    v.eval()
+    pi.eval()
+    output = d(x[:, :state_dim], x[:, -2:]).detach()
+    # output = v(x[:, :state_dim]).detach()
+    plt.plot(np.linspace(0, 1, 1000).astype(np.float32)*2-1, list(output))
+    plt.show()
 
 
 if __name__ == '__main__':
     train()
+    # show_net()
 

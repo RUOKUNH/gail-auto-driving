@@ -5,28 +5,36 @@ from gail_trpo import GAIL
 import torch
 import argparse
 from gail_ppo import GAIL_PPO
+from utils import *
 
 
 def main(args):
-    expert_path = './expert_data5.pkl'
+    ###### train settings ######
+    # expert_path = './expert_data_feature2.pkl'
+    # state_dim = 34  # feature2
+    # feature = feature2
+    # expert_path = './expert_data_feature3.pkl'
+    # state_dim = 39    # feature3
+    # feature = feature3
+    expert_path = './expert_data_feature4.pkl'
+    state_dim = 23  # feature4
+    feature = feature4
+    # expert_path = './expert_data_feature5.pkl'
+    # state_dim = 22  # feature5
+    # feature = feature5
+
+    action_dim = 2
+    ############################
+
     with open('config.json') as f:
         config = json.load(f)
 
-    state_dim = 34  # feature2
-    # state_dim = 39    # feature3
-    action_dim = 2
-
     if args.optim == 'trpo':
         model = GAIL(state_dim, action_dim, config, args)
-    if args.optim == 'ppo':
+    else:
         model = GAIL_PPO(state_dim, action_dim, config, args)
 
-    pi, v, d = model.train(expert_path)
-    #
-    # state = {'action_net': pi.state_dict(),
-    #          'value_net': v.state_dict(),
-    #          'disc_net': d.state_dict()}
-    # torch.save(state, 'model.pth')
+    model.train(expert_path, feature)
 
 
 if __name__ == '__main__':
