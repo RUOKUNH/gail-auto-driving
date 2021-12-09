@@ -60,7 +60,7 @@ weight = np.array([-1.6541483 ,  1.6964793 ,  0.7340574 , -3.096751  , -4.365757
         2.3997731 , -3.1243215 ,  3.4392948 , -1.5711551 ,  3.5670576 ,
        -3.357282  ,  4.3879614 ,  0.67608166, -1.375834  , -4.318674  ],
       dtype=np.float32)
-weight = torch.from_numpy(weight)[:23]
+weight = torch.from_numpy(weight)[:40]
 
 
 def func(x):
@@ -81,7 +81,7 @@ device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('
 
 
 def train():
-    vector_size = 23
+    vector_size = 40
     model = FIT(vector_size)
     iter = 10000
     optimizer = torch.optim.Adam(model.parameters())
@@ -97,7 +97,7 @@ def train():
         np.random.seed()
         for i in range(10):
             idx = torch.from_numpy(np.random.randint(0, 4000, 200).astype(np.int64))
-            input = torch.from_numpy(np.random.random((200, vector_size)).astype(np.float32) * 4 - 2)
+            input = torch.from_numpy(np.random.random((200, vector_size)).astype(np.float32) * 0.4 - 0.2)
             # input = data[idx]
             output = model(input).reshape(-1)
             target = func(input)
@@ -126,7 +126,7 @@ def train():
             with torch.no_grad():
                 x = torch.zeros(10000, vector_size)
                 x[:, 0] = torch.from_numpy(np.linspace(-2, 2, 10000).astype(np.float32))
-                x[:, 1:] = torch.from_numpy(np.random.random(vector_size-1).astype(np.float32)*0.5-0.25)
+                # x[:, 1:] = torch.from_numpy(np.random.random(vector_size-1).astype(np.float32)*0.5-0.25)
                 y = func(x)
                 pred = model(x).reshape(-1)
                 # pdb.set_trace()

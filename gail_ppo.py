@@ -51,6 +51,7 @@ class GAIL_PPO:
         while step < max_step and not done:
             # pdb.set_trace()
             _speed = ob.ego_vehicle_state.speed
+            _heading = ob.ego_vehicle_state.heading
             ob = expert_collector3(ob)
             ob = feature(ob)
             speed.append(ob[1])
@@ -58,6 +59,10 @@ class GAIL_PPO:
             act = list(act.cpu().numpy())
             if _speed <= 0:
                 act[0] = max(0, act[0])
+            if _heading <= -15 / 180 * np.pi:
+                act[1] = max(0, act[1])
+            if _heading >= 15 / 180 * np.pi:
+                act[1] = min(0, act[1])
 
             obs1.append(ob)
             acts1.append(act)
@@ -78,7 +83,7 @@ class GAIL_PPO:
         speeds += speed
         # self.collector_lock.release()
 
-    def train(self, expert_path, feature, kld_limit, epoch):
+    def train(self, expert_path, feature, kld_limit, epoch, d_iters, v_iters):
         if not os.path.exists(f'{self.args.exp}'):
             os.mkdir(f'{self.args.exp}')
         best_score = -np.inf
@@ -209,19 +214,27 @@ class GAIL_PPO:
 
             # Update Dnet
 
+            d_value_buffer = []
             for i in range(self.collectors):
-                gen_obs_buffer = torch.cat([gen_obs_buffer, torch.Tensor(obs2[i])])
-                gen_act_buffer = torch.cat([gen_act_buffer, torch.Tensor(acts2[i])])
+                # gen_obs_buffer = torch.cat([gen_obs_buffer, torch.Tensor(obs2[i])])
+                # gen_act_buffer = torch.cat([gen_act_buffer, torch.Tensor(acts2[i])])
                 gen_obs_buffer2.append(obs2[i])
                 gen_act_buffer2.append(acts2[i])
+                # pdb.set_trace()
+                d_vals = self.d(torch.FloatTensor(obs2[i]), torch.FloatTensor(acts2[i]))
+                d_val = torch.mean(d_vals)
+                if not (torch.isnan(d_val) or torch.isinf(d_val)):
+                    d_value_buffer.append(float(d_val))
             collect_act_buffer += acts2
             collect_obs_buffer += obs2
-            if len(gen_obs_buffer) > 5000:
-                gen_obs_buffer = gen_obs_buffer[-5000:]
-                gen_act_buffer = gen_act_buffer[-5000:]
-            if len(gen_obs_buffer2) > 500:
-                gen_obs_buffer2 = gen_obs_buffer2[-500:]
-                gen_act_buffer2 = gen_act_buffer2[-500:]
+            # if len(gen_obs_buffer) > 1500:
+            #     gen_obs_buffer = gen_obs_buffer[-1500:]
+            #     gen_act_buffer = gen_act_buffer[-1500:]
+            if len(gen_obs_buffer2) > 25:  # save 5 iteration gen data
+                gen_obs_buffer2 = gen_obs_buffer2[-25:]
+                gen_act_buffer2 = gen_act_buffer2[-25:]
+            gen_obs_buffer = torch.cat([torch.Tensor(obs) for obs in gen_obs_buffer2])
+            gen_act_buffer = torch.cat([torch.Tensor(act) for act in gen_act_buffer2])
 
             exp_obs_buffer = []
             exp_act_buffer = []
@@ -232,14 +245,13 @@ class GAIL_PPO:
                 exp_act_buffer += act
             exp_obs_buffer = torch.Tensor(exp_obs_buffer)
             exp_act_buffer = torch.Tensor(exp_act_buffer)
-            iters = min(len(gen_obs_buffer) // 500 + 1, 25)
+            iters = d_iters
             d_loss = 0
             np.random.seed()
             self.d.train()
             for _ in range(iters):
                 gen_idx = torch.from_numpy(np.random.randint(0, len(gen_obs_buffer), 200).astype(np.int64))
                 exp_idx = torch.from_numpy(np.random.randint(0, len(exp_obs_buffer), 200).astype(np.int64))
-                expert_obs = exp_obs_buffer[exp_idx].clone()
                 expert_obs = exp_obs_buffer[exp_idx].clone()
                 expert_act = exp_act_buffer[exp_idx].clone()
                 gen_obs = gen_obs_buffer[gen_idx].clone()
@@ -266,39 +278,54 @@ class GAIL_PPO:
             # TD-update Value net
             self.d.eval()
             self.v.train()
-            v_loss = 0
-            iters = min(25, len(gen_obs_buffer2) // 10 + 1)
-            gen_idx = np.random.randint(0, len(gen_obs_buffer2), iters)
-            exp_idx = np.random.randint(0, len(expert_buffer), iters)
-            d_value_buffer = []
-            for it in range(iters):
-                gen_obs = torch.FloatTensor(gen_obs_buffer2[gen_idx[it]])
-                gen_act = torch.FloatTensor(gen_act_buffer2[gen_idx[it]])
+            n_step = 5
+            curr_obs_buffer = []
+            nnext_obs_buffer = []
+            nstep_discount_rwd_buffer = []
+            for bf in range(len(gen_obs_buffer2)):
+                gen_obs = torch.FloatTensor(gen_obs_buffer2[bf])
+                gen_act = torch.FloatTensor(gen_act_buffer2[bf])
                 gen_act[:, -1] *= 10
                 costs = torch.log(1 - self.d(gen_obs, gen_act)).squeeze().detach()
-                esti_rwds = -1 * costs
-                if not (torch.isnan(torch.mean(esti_rwds)) or torch.isinf(torch.mean(esti_rwds))):
-                    d_value_buffer.append(torch.mean(esti_rwds).detach().numpy())
-                # take real reward in use
-                # esti_rwds = 0.8 * esti_rwds + 0.2 * generation_rwd[i]
-                esti_v = self.v(gen_obs).view(-1)
-                td_v = esti_rwds[:-1] + gamma * esti_v[1:]
-                loss_v = F.mse_loss(esti_v[:-1], td_v)
-                if not (torch.isnan(loss_v) or torch.isinf(loss_v)):
-                    opt_v.zero_grad()
-                    loss_v.backward()
-                    opt_v.step()
-                    v_loss += loss_v
-
-                exp_obs, exp_act = expert_buffer[exp_idx[it]]
-                # exp_obs = [feature(ob) for ob in exp_obs]
+                rewards = -1 * costs
+                curr_obs_buffer.append(gen_obs[:-n_step, :])
+                nnext_obs_buffer.append(gen_obs[n_step:, :])
+                discount_rwd = rewards[:-n_step]
+                for k in range(1, n_step):
+                    discount_rwd += rewards[k: k - n_step] * gamma ** k
+                nstep_discount_rwd_buffer.append(discount_rwd)
+            for _ in range(15):
+                exp_obs, exp_act = expert_buffer[np.random.randint(0, len(expert_buffer))]
                 exp_obs, exp_act = torch.FloatTensor(exp_obs), torch.FloatTensor(exp_act)
                 exp_act[:, -1] *= 10
                 costs = torch.log(1 - self.d(exp_obs, exp_act)).squeeze().detach()
-                esti_rwds = -1 * costs
-                esti_v = self.v(exp_obs).view(-1)
-                td_v = esti_rwds[:-1] + gamma * esti_v[1:]
-                loss_v = F.mse_loss(esti_v[:-1], td_v)
+                rewards = -1 * costs
+                curr_obs_buffer.append(exp_obs[:-n_step, :])
+                nnext_obs_buffer.append(exp_obs[n_step:, :])
+                discount_rwd = rewards[:-n_step]
+                for k in range(1, n_step):
+                    discount_rwd += rewards[k: k - n_step] * gamma ** k
+                nstep_discount_rwd_buffer.append(discount_rwd)
+            curr_obs_buffer, nnext_obs_buffer, nstep_discount_rwd_buffer = \
+                torch.cat(curr_obs_buffer), torch.cat(nnext_obs_buffer), torch.cat(nstep_discount_rwd_buffer)
+            curr_obs_buffer = curr_obs_buffer[~torch.isinf(nstep_discount_rwd_buffer)
+                                              & ~torch.isnan(nstep_discount_rwd_buffer)]
+            nnext_obs_buffer = nnext_obs_buffer[~torch.isinf(nstep_discount_rwd_buffer)
+                                                & ~torch.isnan(nstep_discount_rwd_buffer)]
+            nstep_discount_rwd_buffer = nstep_discount_rwd_buffer[
+                ~torch.isinf(nstep_discount_rwd_buffer) & ~torch.isnan(nstep_discount_rwd_buffer)]
+
+            v_loss = 0
+            iters = v_iters
+            for it in range(iters):
+                train_idx = torch.from_numpy(np.random.randint(0, len(curr_obs_buffer), 200).astype(np.int64))
+                curr_obs = curr_obs_buffer[train_idx]
+                nnext_obs = nnext_obs_buffer[train_idx]
+                nstep_discount_rwd = nstep_discount_rwd_buffer[train_idx]
+                curr_val = self.v(curr_obs).view(-1)
+                nnext_val = self.v(nnext_obs).view(-1)
+                td_val = gamma ** n_step * nnext_val + nstep_discount_rwd
+                loss_v = F.mse_loss(curr_val, td_val)
                 if not (torch.isnan(loss_v) or torch.isinf(loss_v)):
                     opt_v.zero_grad()
                     loss_v.backward()
@@ -313,7 +340,7 @@ class GAIL_PPO:
             v_loss_list.append(v_loss)
 
             # PPO update Action net
-            if _iter <= 10:
+            if kld_limit or _iter < 10:
                 synchronize = self.ppo.update(collect_obs_buffer, collect_act_buffer, gamma, self.v, self.d,
                                               kld_limit=True, epoches=epoch)
             else:

@@ -12,7 +12,7 @@ from torch import FloatTensor
 import argparse
 
 def main():
-    exp = 'exp61'
+    exp = 'exp78'
     env = TrafficSim(["../scenarios/ngsim"])
     # feature4
     state_dim = 23
@@ -55,10 +55,10 @@ def main():
 
         obs = torch.FloatTensor(obs)
         acts = torch.FloatTensor(acts)
-        # print(-torch.log(1-d(obs, acts)))
-        # print(v(obs))
+        print(-torch.log(1-d(obs, acts)))
+        print(v(obs))
         # print(acts)
-        pdb.set_trace()
+        # pdb.set_trace()
 
 
 if __name__ == '__main__':

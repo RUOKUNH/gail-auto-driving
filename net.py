@@ -41,6 +41,11 @@ p_dims = [128] * 4
 v_dims = [128] * 4
 d_dims = [128] * 4
 
+# net 7
+# p_dims = [256, 128, 64, 32]
+# v_dims = [128] * 4
+# d_dims = [128] * 4
+
 
 class PolicyNetwork(torch.nn.Module):
     def __init__(self, state_dim, action_dim):
@@ -65,6 +70,7 @@ class PolicyNetwork(torch.nn.Module):
         x = self.input(states)
         for layer in self.layers:
             x = layer(x) + x
+            # x = layer(x)
         mean = self.output(x)
 
         if mean.ndim > 1:

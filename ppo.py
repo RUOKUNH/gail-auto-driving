@@ -58,7 +58,6 @@ class PPO:
             if kld < 0.1:
                 return
             else:
-                print(kld)
                 alpha *= 0.7
         set_params(self.pnet, old_param)
         print('step too large')
@@ -110,19 +109,23 @@ class PPO:
                 _obs, _acts = FloatTensor(_obs), FloatTensor(_acts)
                 dist = self.pnet(_obs)
                 old_dist = self.collect_pnet(_obs)
-                _ratio = torch.exp(dist.log_prob(_acts)
-                                   - old_dist.log_prob(_acts).detach())
+                _ratio = torch.exp(dist.log_prob(_acts) - old_dist.log_prob(_acts).detach())
                 loss, _grad = self.L_clip(_advs, _ratio)
                 # dist_causal_entropy = self.config['lambda_'] * (-1 * self.pnet(_obs).log_prob(_acts)).mean()
                 # loss -= dist_causal_entropy
-                if _grad:
-                    old_param = get_flat_params(self.pnet)
-                    self.optimizer.zero_grad()
-                    loss.backward()
-                    self.optimizer.step()
-                    new_param = get_flat_params(self.pnet)
-                    if kld_limit:
-                        self.rescale_and_line_search(dist, new_param, old_param, _obs)
+                if not _grad:
+                    st = ed
+                    continue
+                if torch.isnan(loss) or torch.isinf(loss):
+                    st = ed
+                    continue
+                old_param = get_flat_params(self.pnet)
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+                new_param = get_flat_params(self.pnet)
+                if kld_limit:
+                    self.rescale_and_line_search(dist, new_param, old_param, _obs)
                 st = ed
         #########################
         if self.synchronize_step >= self.synchronize_steps:

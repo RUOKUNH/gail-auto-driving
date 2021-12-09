@@ -232,7 +232,7 @@ def expert_collector3(obs):
         nei_dist = [(neighbor_idx[i], dist[i]) for i in neighbor_idx]
         nei_dist.sort(key=lambda x: x[1])
     # closest 8 neighbors
-    neighbor_num = 4
+    neighbor_num = 8
     l = min(len(neighbor_position), neighbor_num)
     for i in range(l):
         n = neighbors[nei_dist[i][0]]
@@ -573,6 +573,11 @@ def feature5(obs):
     r_speeds_y /= 10
     feature = np.concatenate((feature, dists, r_speeds_x, r_speeds_y))
     return feature
+
+def feature6(obs):
+    obs = feature3(obs)
+    obs = obs[:-4]
+    return obs
 
 def get_corners(x, y, l, w, heading):
     corner_pass = [(l / 2, w / 2), (l / 2, -w / 2), (-l / 2, -w / 2), (-l / 2, w / 2)]
