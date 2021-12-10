@@ -12,7 +12,7 @@ from torch import FloatTensor
 import argparse
 
 def main():
-    exp = 'exp88'
+    exp = 'exp102'
     env = TrafficSim(["../scenarios/ngsim"])
     # feature4
     state_dim = 35
@@ -37,6 +37,7 @@ def main():
         rwds = []
         _obs = []
         ob = env.reset()
+        pdb.set_trace()
         done = False
         step = 0
         while not done and step <= 1000:

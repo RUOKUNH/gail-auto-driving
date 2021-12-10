@@ -37,6 +37,8 @@ def main(args):
     # kld_limit = False
     kld_limit = True
 
+    block = False
+
     synchronize = 5
     epoch = 5
     d_iters = 50
@@ -59,7 +61,8 @@ def main(args):
                 epoch=epoch,
                 d_iters=d_iters,
                 v_iters=v_iters,
-                beta=beta)
+                beta=beta,
+                block=block)
 
 
 if __name__ == '__main__':

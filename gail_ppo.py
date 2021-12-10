@@ -39,7 +39,7 @@ class GAIL_PPO:
 
         self.env = TrafficSim(["../scenarios/ngsim"], envision=False)
 
-    def collect(self, obs, acts, rwds, gammas, steps, speeds, max_step, pnet, gamma, feature):
+    def collect(self, car_id, obs, acts, rwds, gammas, steps, speeds, max_step, pnet, gamma, feature):
         obs1 = []
         acts1 = []
         rwds1 = []
@@ -47,6 +47,8 @@ class GAIL_PPO:
         speed = []
         step = 0
         ob = self.env.reset()
+        id = ob.ego_vehicle_state.id.split('-')[0]
+        car_id.append('Agent-history-vehicle-'+id)
         done = False
         while step < max_step and not done:
             # pdb.set_trace()
@@ -63,7 +65,8 @@ class GAIL_PPO:
             #     act[1] = max(0, act[1])
             # if _heading >= 0.1:
             #     act[1] = min(0, act[1])
-            act[1] = 0
+            if self.block:
+                act[1] = 0
 
             obs1.append(ob)
             acts1.append(act)
@@ -84,9 +87,10 @@ class GAIL_PPO:
         speeds += speed
         # self.collector_lock.release()
 
-    def train(self, expert_path, feature, kld_limit, epoch, d_iters, v_iters, beta):
+    def train(self, expert_path, feature, kld_limit, epoch, d_iters, v_iters, beta, block):
         if not os.path.exists(f'{self.args.exp}'):
             os.mkdir(f'{self.args.exp}')
+        self.block = block
         best_score = -np.inf
         score_list = []
         upper_score_list = []
@@ -103,7 +107,8 @@ class GAIL_PPO:
         opt_d = torch.optim.Adam(self.d.parameters(), eps=1e-4)
         opt_v = torch.optim.Adam(self.v.parameters(), eps=1e-4)
 
-        expert_buffer = []
+        # expert_buffer = []
+        expert_buffer = {}
         beta = beta
         gen_obs_buffer = torch.Tensor([])
         gen_act_buffer = torch.Tensor([])
@@ -117,15 +122,17 @@ class GAIL_PPO:
         while True:
             try:
                 record = pkl.load(pkf)
+                # pdb.set_trace()
                 expert_obs = record['observation']
                 expert_act = record['actions']
                 # expert_obs = [feature(ob) for ob in expert_obs]
-                expert_buffer.append((expert_obs, expert_act))
+                # expert_buffer.append((expert_obs, expert_act))
+                expert_buffer[record['car']] = (expert_obs, expert_act)
             except EOFError:
                 pkf.close()
                 break
-        random.shuffle(expert_buffer)
-        # pdb.set_trace()
+        keys = list(expert_buffer.keys())
+        random.shuffle(keys)
         print('finish loading data')
         batch_idx = 0
         _iter = 0
@@ -133,6 +140,7 @@ class GAIL_PPO:
         while _iter < train_iter:
             _iter += 1
             # Generate interactive data
+            car_id = []
             obs2 = []
             acts2 = []
             rwds2 = []
@@ -143,8 +151,8 @@ class GAIL_PPO:
             self.ppo.collect_pnet.eval()
             while collects < self.collectors:
                 try:
-                    self.collect(obs2, acts2, rwds2, gammas2, _step, speeds, max_step, self.ppo.collect_pnet, gamma,
-                                 feature)
+                    self.collect(car_id, obs2, acts2, rwds2, gammas2, _step, speeds, max_step,
+                                 self.ppo.collect_pnet, gamma, feature)
                     collects += 1
                 except:
                     continue
@@ -169,6 +177,7 @@ class GAIL_PPO:
                 gen_coach_buffer.append((obs2[idx], acts2[idx]))
                 obs2.pop(idx)
                 acts2.pop(idx)
+                car_id.pop(idx)
             if len(gen_coach_buffer) > 50:
                 gen_coach_buffer = gen_coach_buffer[-50:]
             d_value_buffer = []
@@ -184,14 +193,16 @@ class GAIL_PPO:
                     d_value_buffer.append(float(d_val))
 
             coach_buffer = []
-            for i in range(50):
+            for car in car_id:
+                coach_buffer.append(expert_buffer[car])
+            while len(coach_buffer) < 50:
                 p = beta**_iter
                 if np.random.random() > p and len(gen_coach_buffer) > 0:
                     idx = np.random.randint(len(gen_coach_buffer))
                     coach_buffer.append(gen_coach_buffer[idx])
                 else:
                     idx = np.random.randint(len(expert_buffer))
-                    coach_buffer.append(expert_buffer[idx])
+                    coach_buffer.append(expert_buffer[keys[idx]])
             collect_act_buffer += acts2
             collect_obs_buffer += obs2
             # if len(gen_obs_buffer) > 1500:
