@@ -12,12 +12,12 @@ from torch import FloatTensor
 import argparse
 
 def main():
-    exp = 'exp78'
+    exp = 'exp88'
     env = TrafficSim(["../scenarios/ngsim"])
     # feature4
-    state_dim = 23
+    state_dim = 35
     action_dim = 2
-    feature = feature4
+    feature = feature6
 
     pi = PolicyNetwork(state_dim, action_dim)
     # model_path = 'bestmodel'+exp+'.pth'

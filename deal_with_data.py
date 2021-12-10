@@ -4,7 +4,7 @@ from utils import *
 
 
 # [ego_state, nx,ny,nl,nw,nh,ns,....(4 neighbor), events]
-dataset_name = 'expert_data_feature6.pkl'
+dataset_name = 'expert_data_feature7.pkl'
 pkf = open('expert_data_full.pkl', 'rb')
 if os.path.exists(dataset_name):
     os.remove(dataset_name)
@@ -15,7 +15,7 @@ while True:
         car = record['car']
         observation = record['observation']
         observation = [expert_collector3(obs) for obs in observation]
-        observation = [feature6(obs) for obs in observation]
+        observation = [feature7(obs) for obs in observation]
         acts = list(record['actions'])
         with open(dataset_name, "ab") as f:
             pkl.dump(

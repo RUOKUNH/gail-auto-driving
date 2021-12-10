@@ -12,7 +12,7 @@ class PPO:
     def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=1, mini_batch=100):
         self.collect_pnet = PolicyNetwork(state_dim, action_dim)
         self.pnet = PolicyNetwork(state_dim, action_dim)
-        self.optimizer = torch.optim.Adam(self.pnet.parameters())
+        self.optimizer = torch.optim.Adam(self.pnet.parameters(), eps=1e-4)
         self.synchronize_steps = synchronize_steps
         self.synchronize_step = 0
         self.mini_batch = mini_batch
@@ -61,7 +61,6 @@ class PPO:
                 alpha *= 0.7
         set_params(self.pnet, old_param)
         print('step too large')
-
 
     def update(self, obs, acts, gamma, vnet, dnet, epoches=5, kld_limit=False):
         self.synchronize_step += 1

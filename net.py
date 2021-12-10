@@ -37,14 +37,19 @@ init = 'xavier'
 # d_dims = [128] * 7
 
 # net 6
-p_dims = [128] * 4
+# p_dims = [128] * 4
+# v_dims = [128] * 4
+# d_dims = [128] * 4
+
+# net 7
+p_dims = [256, 128, 64, 32]
 v_dims = [128] * 4
 d_dims = [128] * 4
 
-# net 7
+# net 8
 # p_dims = [256, 128, 64, 32]
-# v_dims = [128] * 4
-# d_dims = [128] * 4
+# v_dims = [256, 128, 64, 32]
+# d_dims = [256, 128, 64, 32]
 
 
 class PolicyNetwork(torch.nn.Module):
@@ -69,8 +74,8 @@ class PolicyNetwork(torch.nn.Module):
         states = torch.FloatTensor(states)
         x = self.input(states)
         for layer in self.layers:
-            x = layer(x) + x
-            # x = layer(x)
+            # x = layer(x) + x
+            x = layer(x)
         mean = self.output(x)
 
         if mean.ndim > 1:
@@ -107,6 +112,7 @@ class ValueNetwork(torch.nn.Module):
         x = self.input(states)
         for layer in self.layers:
             x = layer(x) + x
+            # x = layer(x)
         x = self.output(x)
         return x
 
@@ -136,5 +142,6 @@ class Discriminator(torch.nn.Module):
         x = self.input(x)
         for layer in self.layers:
             x = layer(x) + x
+            # x = layer(x)
         x = self.output(x)
         return x

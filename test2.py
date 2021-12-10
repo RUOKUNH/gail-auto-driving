@@ -42,8 +42,8 @@ class FIT(nn.Module):
         # x = x / 10
         x = self.input(x)
         for layer in self.layers:
-            x = layer(x) + x
-            # x = layer(x)
+            # x = layer(x) + x
+            x = layer(x)
         x = self.output(x)
         x = torch.tanh(x)
         # x = torch.sigmoid(x)

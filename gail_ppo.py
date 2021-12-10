@@ -57,12 +57,13 @@ class GAIL_PPO:
             speed.append(ob[1])
             act = pnet(ob).sample()
             act = list(act.cpu().numpy())
-            if _speed <= 0:
-                act[0] = max(0, act[0])
-            if _heading <= -15 / 180 * np.pi:
-                act[1] = max(0, act[1])
-            if _heading >= 15 / 180 * np.pi:
-                act[1] = min(0, act[1])
+            # if _speed <= 0:
+            #     act[0] = max(0, act[0])
+            # if _heading <= -0.1:
+            #     act[1] = max(0, act[1])
+            # if _heading >= 0.1:
+            #     act[1] = min(0, act[1])
+            act[1] = 0
 
             obs1.append(ob)
             acts1.append(act)
@@ -83,22 +84,13 @@ class GAIL_PPO:
         speeds += speed
         # self.collector_lock.release()
 
-    def train(self, expert_path, feature, kld_limit, epoch, d_iters, v_iters):
+    def train(self, expert_path, feature, kld_limit, epoch, d_iters, v_iters, beta):
         if not os.path.exists(f'{self.args.exp}'):
             os.mkdir(f'{self.args.exp}')
         best_score = -np.inf
-        # if self.args.con:
-        #     model = torch.load('model' + self.args.exp + '.pth')
-        #     self.ppo.pnet.load_state_dict(model['action_net'])
-        #     self.ppo.collect_pnet.load_state_dict(model['action_net'])
-        #     self.v.load_state_dict(model['value_net'])
-        #     self.d.load_state_dict(model['disc_net'])
-        #     with open('scores.txt', 'rb') as pkf:
-        #         scores_dict = pkl.load(pkf)
-        #         score_list = scores_dict[self.args.exp]
-        # else:
-        #     score_list = []
         score_list = []
+        upper_score_list = []
+        lower_score_list = []
         d_loss_list = []
         v_loss_list = []
         d_value_list = []
@@ -108,21 +100,19 @@ class GAIL_PPO:
         lambda_ = self.train_config['lambda_']
         gamma = self.train_config['gamma']
 
-        opt_d = torch.optim.Adam(self.d.parameters())
-        opt_v = torch.optim.Adam(self.v.parameters())
+        opt_d = torch.optim.Adam(self.d.parameters(), eps=1e-4)
+        opt_v = torch.optim.Adam(self.v.parameters(), eps=1e-4)
 
         expert_buffer = []
-        # obs, act
-        # train_buffer = [[], []]
-        # max_train_buffer = 2000
-        # # beta = 0.99
-        # beta = 1
+        beta = beta
         gen_obs_buffer = torch.Tensor([])
         gen_act_buffer = torch.Tensor([])
         gen_obs_buffer2 = []
         gen_act_buffer2 = []
         collect_obs_buffer = []
         collect_act_buffer = []
+        coach_buffer = []
+        gen_coach_buffer = []
         pkf = open(expert_path, 'rb')
         while True:
             try:
@@ -163,59 +153,26 @@ class GAIL_PPO:
             t = time.time()
 
             score_list.append(np.mean([np.sum(rwd) for rwd in rwds2]))
+            upper_score_list.append(np.max([np.sum(rwd) for rwd in rwds2]))
+            lower_score_list.append(np.min([np.sum(rwd) for rwd in rwds2]))
 
             for rwd in rwds2:
                 rwd = np.array(rwd)
                 last_steps = min(20, len(rwd))
                 rwd[-last_steps:] -= np.linspace(0, np.sqrt(5), last_steps) ** 2
 
-            # pdb.set_trace()
-
-            # Dagger
-            # while len(train_buffer[0]) >= max_train_buffer:
-            #     pop_idx = random.randint(0, len(train_buffer[0])-1)
-            #     train_buffer[0].pop(pop_idx)
-            #     train_buffer[1].pop(pop_idx)
-            # sample_num = 10
-            # expert_ratio = beta ** (_iter - 1)
-            # expert_samples = int(np.ceil(sample_num * expert_ratio))
-            # generation_samples = min(sample_num - expert_samples, self.collectors)
-            # for i in range(expert_samples):
-            #     sample = expert_buffer[batch_idx]
-            #     exp_obs = sample['observation']
-            #     exp_obs = [feature(ob) for ob in exp_obs]
-            #     train_buffer[0].append(exp_obs)
-            #     train_buffer[1].append(sample['actions'])
-            #     batch_idx += 1
-            #     if batch_idx >= len(expert_buffer):
-            #         batch_idx = 0
-            # sample_count = 0
-            # for i in range(self.collectors):
-            #     if sample_count == generation_samples:
-            #         break
-            #     # if np.sum(rwds2[i]) > 150:
-            #     train_buffer[0].append(obs2[i])
-            #     train_buffer[1].append(acts2[i])
-            #     sample_count += 1
-            # buffer_update_record.append(sample_count + expert_samples)
-            # generation_obs = []
-            # generation_act = []
-            # for i in range(self.collectors):
-            #     generation_obs.append(torch.FloatTensor(obs2[i]))
-            #     generation_act.append(torch.FloatTensor(acts2[i]))
-            # generation_rwd = [torch.FloatTensor(rwd) for rwd in rwds2]
-            # train_samples = min(len(train_buffer[0]), 10)
-            # expert_sample_idx = np.random.randint(0, len(train_buffer[0]), train_samples)
-            # expert_obs = []
-            # expert_act = []
-            # for i in expert_sample_idx:
-            #     expert_obs += train_buffer[0][i]
-            #     expert_act += list(train_buffer[1][i])
-
             # Update Dnet
-
+            _rwds = [np.sum(rwd) for rwd in rwds2]
+            # Coaching Dagger
+            idx = np.argmax(_rwds)
+            if _rwds[idx] > 100:
+                gen_coach_buffer.append((obs2[idx], acts2[idx]))
+                obs2.pop(idx)
+                acts2.pop(idx)
+            if len(gen_coach_buffer) > 50:
+                gen_coach_buffer = gen_coach_buffer[-50:]
             d_value_buffer = []
-            for i in range(self.collectors):
+            for i in range(len(obs2)):
                 # gen_obs_buffer = torch.cat([gen_obs_buffer, torch.Tensor(obs2[i])])
                 # gen_act_buffer = torch.cat([gen_act_buffer, torch.Tensor(acts2[i])])
                 gen_obs_buffer2.append(obs2[i])
@@ -225,6 +182,16 @@ class GAIL_PPO:
                 d_val = torch.mean(d_vals)
                 if not (torch.isnan(d_val) or torch.isinf(d_val)):
                     d_value_buffer.append(float(d_val))
+
+            coach_buffer = []
+            for i in range(50):
+                p = beta**_iter
+                if np.random.random() > p and len(gen_coach_buffer) > 0:
+                    idx = np.random.randint(len(gen_coach_buffer))
+                    coach_buffer.append(gen_coach_buffer[idx])
+                else:
+                    idx = np.random.randint(len(expert_buffer))
+                    coach_buffer.append(expert_buffer[idx])
             collect_act_buffer += acts2
             collect_obs_buffer += obs2
             # if len(gen_obs_buffer) > 1500:
@@ -239,7 +206,7 @@ class GAIL_PPO:
             exp_obs_buffer = []
             exp_act_buffer = []
             while len(exp_obs_buffer) < 5000:
-                obs, act = expert_buffer[np.random.randint(len(expert_buffer))]
+                obs, act = coach_buffer[np.random.randint(len(coach_buffer))]
                 # obs = [feature(ob) for ob in obs]
                 exp_obs_buffer += obs
                 exp_act_buffer += act
@@ -295,7 +262,7 @@ class GAIL_PPO:
                     discount_rwd += rewards[k: k - n_step] * gamma ** k
                 nstep_discount_rwd_buffer.append(discount_rwd)
             for _ in range(15):
-                exp_obs, exp_act = expert_buffer[np.random.randint(0, len(expert_buffer))]
+                exp_obs, exp_act = coach_buffer[np.random.randint(0, len(coach_buffer))]
                 exp_obs, exp_act = torch.FloatTensor(exp_obs), torch.FloatTensor(exp_act)
                 exp_act[:, -1] *= 10
                 costs = torch.log(1 - self.d(exp_obs, exp_act)).squeeze().detach()
@@ -354,6 +321,8 @@ class GAIL_PPO:
             rwds2 = [np.sum(rwd) for rwd in rwds2]
 
             plt.plot(np.arange(len(score_list)), score_list)
+            plt.plot(np.arange(len(upper_score_list)), upper_score_list)
+            plt.plot(np.arange(len(lower_score_list)), lower_score_list)
             plt.savefig(f'{self.args.exp}/rwd.png')
             plt.close()
             plt.plot(np.arange(len(d_loss_list)), d_loss_list)
@@ -403,7 +372,8 @@ class GAIL_PPO:
                          'disc_net': self.d.state_dict(),
                          'net_dims': [self.ppo.get_pnet().net_dims,
                                       self.v.net_dims,
-                                      self.d.net_dims]}
+                                      self.d.net_dims],
+                         'action_dim': self.action_dim}
                 torch.save(state, f'{self.args.exp}/bestmodel{self.args.exp}.pth')
 
             if _iter % 50 == 0:
@@ -412,7 +382,8 @@ class GAIL_PPO:
                          'disc_net': self.d.state_dict(),
                          'net_dims': [self.ppo.get_pnet().net_dims,
                                       self.v.net_dims,
-                                      self.d.net_dims]
+                                      self.d.net_dims],
+                         'action_dim': self.action_dim
                          }
                 torch.save(state, f'{self.args.exp}/model{self.args.exp}.pth')
                 # if not os.path.exists(f'scores{self.args.exp}.txt'):
