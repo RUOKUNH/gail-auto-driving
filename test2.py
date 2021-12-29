@@ -21,31 +21,34 @@ class FIT(nn.Module):
         super().__init__()
         hidden = [128] * 4
         self.hidden = hidden
-        self.input = nn.Sequential(
-                # nn.BatchNorm1d(vector_size),
-                nn.Linear(vector_size, hidden[0]),
-            )
+        # self.input = nn.Sequential(
+        #         # nn.BatchNorm1d(vector_size),
+        #         nn.Linear(vector_size, hidden[0]),
+        #     )
 
         self.layers = nn.ModuleList()
-        for i in range(len(hidden)-1):
+        last_size = vector_size
+        for i in range(len(hidden)):
             self.layers.append(
                 nn.Sequential(
                     # nn.LayerNorm(hidden[i]),
-                    nn.ELU(),
-                    nn.Linear(hidden[i], hidden[i + 1]),
+                    nn.Linear(last_size, hidden[i]),
+                    nn.Dropout(0.5),
+                    nn.ReLU(),
                 )
             )
+            last_size = hidden[i]
 
-        self.output = nn.Linear(hidden[-1], 1)
+        self.output = nn.Linear(hidden[-1], 2)
 
     def forward(self, x):
         # x = x / 10
-        x = self.input(x)
+        # x = self.input(x)
         for layer in self.layers:
             # x = layer(x) + x
             x = layer(x)
         x = self.output(x)
-        x = torch.tanh(x)
+        # x = torch.tanh(x)
         # x = torch.sigmoid(x)
         # x = x-0.5
         return x
@@ -58,21 +61,31 @@ weight = np.array([-1.6541483 ,  1.6964793 ,  0.7340574 , -3.096751  , -4.365757
         4.6946507 , -2.3798106 , -0.45307064, -3.716114  ,  0.9551339 ,
        -2.2365117 ,  0.7316961 , -1.4348145 ,  1.5554662 ,  3.955039  ,
         2.3997731 , -3.1243215 ,  3.4392948 , -1.5711551 ,  3.5670576 ,
-       -3.357282  ,  4.3879614 ,  0.67608166, -1.375834  , -4.318674  ],
+       -3.357282  ,  4.3879614 ,  0.67608166, -1.375834  , -4.318674,-1.6541483 ,  1.6964793 ,  0.7340574 , -3.096751  , -4.365757  ,
+        2.4427834 , -1.2998891 ,  4.6308403 ,  1.7422681 , -0.0795083 ,
+        4.081893  ,  4.086707  ,  0.36737156,  4.3161373 ,  3.6109133 ,
+       -3.6766458 , -4.107183  ,  1.5030646 ,  1.4355726 , -1.0142331 ,
+        4.6946507 , -2.3798106 , -0.45307064, -3.716114  ,  0.9551339 ,
+       -2.2365117 ,  0.7316961 , -1.4348145 ,  1.5554662 ,  3.955039  ,
+        2.3997731 , -3.1243215 ,  3.4392948 , -1.5711551 ,  3.5670576 ,
+       -3.357282  ,  4.3879614 ,  0.67608166, -1.375834  , -4.318674   ],
       dtype=np.float32)
-weight = torch.from_numpy(weight)[:40]
+weight1 = torch.tensor([weight[:59]])
+weight2 = torch.tensor([weight[-59:]])
+weight_ = torch.cat([weight1, weight2]).reshape(-1, 2)
 
 
 def func(x):
     x = x*10
     x = torch.FloatTensor(x)
-    x = torch.sum(weight * x, dim=1)
+    x = x @ weight_
     x = torch.tanh(x) + x ** 2 / 100
     x = torch.exp(x) - 3
     x = torch.sigmoid(x)
     # x[x >= 0.5] = 1
     # x[x < 0.5] = 0
-    # x *= 10
+    # x *= 100
+    # x /= 10
 
     return x
 
@@ -81,26 +94,23 @@ device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('
 
 
 def train():
-    vector_size = 40
+    vector_size = 59
     model = FIT(vector_size)
     iter = 10000
     optimizer = torch.optim.Adam(model.parameters())
     # optimizer = torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.99)
     loss = []
-    model.train()
-    data = torch.from_numpy(np.random.random((4000, vector_size)).astype(np.float32) * 4 - 2)
-    # np.random.seed()
-    for k in range(800):
-        new_data = torch.from_numpy(np.random.random((400, vector_size)).astype(np.float32) * 4 - 2)
-        data = torch.cat([data, new_data])[-4000:]
-        label = func(data)
+    for k in range(50000):
         np.random.seed()
-        for i in range(10):
-            idx = torch.from_numpy(np.random.randint(0, 4000, 200).astype(np.int64))
-            input = torch.from_numpy(np.random.random((200, vector_size)).astype(np.float32) * 0.4 - 0.2)
-            # input = data[idx]
-            output = model(input).reshape(-1)
+        model.train()
+        for i in range(1):
+            input = torch.from_numpy(np.random.random((256, vector_size)).astype(np.float32) * 2 - 1)
+            input[:, -20:] = torch.from_numpy(np.random.random((256, 20)).astype(np.float32))
+            input[:, :29] = torch.from_numpy(np.random.random((256, 29)).astype(np.float32)*-1)
+            output = model(input)
             target = func(input)
+            # pdb.set_trace()
+            # pdb.set_trace()
             # target = label[idx]
             # idx_0 = (target == 0)
             # idx_1 = (target == 1)
@@ -120,19 +130,20 @@ def train():
             _loss.backward()
             optimizer.step()
             loss.append(float(_loss))
-        # pdb.set_trace()
         print(f'iter {k} loss {np.mean(loss[-50:])}')
-        if k % 50 == 0:
+        if (k+1) % 2000 == 0:
+            model.eval()
             with torch.no_grad():
                 x = torch.zeros(10000, vector_size)
-                x[:, 0] = torch.from_numpy(np.linspace(-2, 2, 10000).astype(np.float32))
+                x[:, 0] = torch.from_numpy(np.linspace(-1, 1, 10000).astype(np.float32))
                 # x[:, 1:] = torch.from_numpy(np.random.random(vector_size-1).astype(np.float32)*0.5-0.25)
                 y = func(x)
-                pred = model(x).reshape(-1)
+                pred = model(x)
                 # pdb.set_trace()
-                pred = list(pred)
-                plt.plot(np.linspace(-2, 2, 10000).astype(np.float32), pred)
-                plt.plot(np.linspace(-2, 2, 10000).astype(np.float32), y)
+                # pred = list(pred)
+                # pdb.set_trace()
+                plt.plot(np.linspace(-1, 1, 10000).astype(np.float32), pred[:, 0])
+                plt.plot(np.linspace(-1, 1, 10000).astype(np.float32), y[:, 0])
                 plt.show()
                 plt.plot(np.arange(len(loss)-50), loss[50:])
                 plt.show()

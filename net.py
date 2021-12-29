@@ -1,147 +1,84 @@
 import torch
 import pdb
-
-
-def init_weights_xavier(m):
-    if isinstance(m, torch.nn.Linear):
-        torch.nn.init.xavier_uniform_(m.weight)
-        m.bias.data.fill_(0.01)
-
-
-init = 'xavier'
-# init = None
-
-# net 1
-# p_dims = [64, 64, 128, 256]
-# v_dims = [64, 64, 128]
-# d_dims = [64, 64, 128, 128, 256]
-
-# net 2
-# p_dims = [96, 96, 128, 128, 256]
-# v_dims = [96, 96, 128, 128, 256]
-# d_dims = [96, 96, 128, 128, 256]
-
-# net 3
-# p_dims = [64, 64, 128, 256]
-# v_dims = [96, 96, 128, 128, 256]
-# d_dims = [96, 96, 128, 128, 256]
-
-# net 4
-# p_dims = [96, 96, 128, 128, 256]
-# v_dims = [128] * 7
-# d_dims = [128] * 7
-
-# net 5
-# p_dims = [128] * 5
-# v_dims = [128] * 7
-# d_dims = [128] * 7
-
-# net 6
-# p_dims = [128] * 4
-# v_dims = [128] * 4
-# d_dims = [128] * 4
-
-# net 7
-# p_dims = [256, 128, 64, 32]
-# v_dims = [128] * 4
-# d_dims = [128] * 4
-
-# net 8
-p_dims = [256, 128, 64, 32]
-v_dims = [256, 128, 64, 32]
-d_dims = [256, 128, 64, 32]
+import torch.nn.functional as F
+from torch.distributions import Categorical, Normal
 
 
 class PolicyNetwork(torch.nn.Module):
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, state_dim, action_dim, net_dims, drop_rate=None):
         super(PolicyNetwork, self).__init__()
-        self.net_dims = p_dims
-        self.layers = torch.nn.ModuleList()
-        self.input = torch.nn.Linear(state_dim, self.net_dims[0])
-        for i in range(len(self.net_dims) - 1):
-            self.layers.append(
-                torch.nn.Sequential(
-                    torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]),
-                    torch.nn.ELU())
-            )
+        self.net_dims = net_dims
+        layers = []
+        last_dim = state_dim
+        for i in range(len(self.net_dims)):
+            layers.append(torch.nn.Linear(last_dim, self.net_dims[i])),
+            if drop_rate:
+                layers.append(torch.nn.Dropout(drop_rate[i]))
+            layers.append(torch.nn.LeakyReLU())
+            last_dim = self.net_dims[i]
+        layers.append(torch.nn.Linear(self.net_dims[-1], action_dim))
+        self.layers = torch.nn.Sequential(*layers)
 
-        self.output = torch.nn.Linear(self.net_dims[-1], action_dim)
-
-        self.state_dim = state_dim
-        self.action_dim = action_dim
 
     def forward(self, states):
-        states = torch.FloatTensor(states)
-        x = self.input(states)
-        for layer in self.layers:
-            # x = layer(x) + x
-            x = layer(x)
-        mean = self.output(x)
-
+        mean, var = torch.chunk(self.layers(states), 2, dim=-1)
+        mean /= 10
+        var = torch.tanh(var) * 10
+        var = F.softplus(var)
+        cov_mat = torch.diag_embed(var)
         if mean.ndim > 1:
-            mean[:, 0] = torch.tanh(mean[:, 0])
-            mean[:, 1] = torch.tanh(mean[:, 1]) * 0.1
+            mean[:, 0] = torch.tanh(mean[:, 0]) * 5
+            mean[:, 1] = torch.tanh(mean[:, 1]) * 0.25
         else:
-            mean[0] = torch.tanh(mean[0])
-            mean[1] = torch.tanh(mean[0]) * 0.1
+            mean[0] = torch.tanh(mean[0]) * 5
+            mean[1] = torch.tanh(mean[0]) * 0.25
+        dist = torch.distributions.MultivariateNormal(mean, cov_mat)
 
-        cov_mtx = torch.FloatTensor([[5e-2, 0], [0, 25e-4]])
-
-        distb = torch.distributions.MultivariateNormal(mean, cov_mtx)
-
-        return distb
+        return dist
 
 
 class ValueNetwork(torch.nn.Module):
-    def __init__(self, state_dim):
+    def __init__(self, state_dim, net_dims, drop_rate=None):
         super(ValueNetwork, self).__init__()
-        self.net_dims = v_dims
-        self.layers = torch.nn.ModuleList()
-        self.input = torch.nn.Linear(state_dim, self.net_dims[0])
-        for i in range(len(self.net_dims)-1):
-            self.layers.append(
-                torch.nn.Sequential(
-                    torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]),
-                    torch.nn.ELU())
-            )
-
-        self.output = torch.nn.Linear(self.net_dims[-1], 1)
+        self.net_dims = net_dims
+        layers = []
+        last_dim = state_dim
+        for i in range(len(self.net_dims)):
+            layers.append(torch.nn.Linear(last_dim, self.net_dims[i]))
+            if drop_rate:
+                layers.append(torch.nn.Dropout(drop_rate[i]))
+            layers.append(torch.nn.LeakyReLU())
+            last_dim = self.net_dims[i]
+        layers.append(torch.nn.Linear(self.net_dims[-1], 1))
+        self.layers = torch.nn.Sequential(*layers)
 
     def forward(self, states):
-        states = torch.FloatTensor(states)
-        x = self.input(states)
-        for layer in self.layers:
-            # x = layer(x) + x
-            x = layer(x)
-        x = self.output(x)
-        return x
+        val = self.layers(states)
+        return val
 
 
 class Discriminator(torch.nn.Module):
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, state_dim, action_dim, net_dims, drop_rate=None):
         super(Discriminator, self).__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.net_in_dim = state_dim + action_dim
-        self.net_dims = d_dims
-        self.input = torch.nn.Linear(self.net_in_dim, self.net_dims[0])
-        self.layers = torch.nn.ModuleList()
-        for i in range(len(self.net_dims)-1):
-            self.layers.append(
-                torch.nn.Sequential(
-                    torch.nn.Linear(self.net_dims[i], self.net_dims[i + 1]),
-                    torch.nn.ELU())
-            )
-        self.output = torch.nn.Linear(self.net_dims[-1], 1)
+        net_in_dim = state_dim + action_dim
+        self.net_dims = net_dims
+        layers = []
+        last_dim = net_in_dim
+        for i in range(len(self.net_dims)):
+            layers.append(torch.nn.Linear(last_dim, self.net_dims[i]))
+            if drop_rate:
+                layers.append(torch.nn.Dropout(drop_rate[i]))
+            layers.append(torch.nn.LeakyReLU())
+            last_dim = self.net_dims[i]
+        layers.append(torch.nn.Linear(self.net_dims[-1], 1))
+        self.layers = torch.nn.Sequential(*layers)
 
     def forward(self, states, actions):
         return torch.sigmoid(self.get_logits(states, actions))
 
     def get_logits(self, states, actions):
         x = torch.cat([states, actions], dim=-1)
-        x = self.input(x)
-        for layer in self.layers:
-            # x = layer(x) + x
-            x = layer(x)
-        x = self.output(x)
+        x = self.layers(x)
         return x

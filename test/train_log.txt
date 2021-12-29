@@ -1,0 +1,35 @@
+
+
+
+Wed Dec 29 00:39:38 2021
+train_params:
+policy_net:[512, 256, 128, 64]
+policy_net_drop_rate:None
+value_net:[512, 256, 128, 64]
+value_net_drop_rate:None
+critic_net:[512, 256, 128, 64]
+critic_net_drop_rate:None
+state_dim:65
+action_dim:2
+policy_lr:5e-05
+value_lr:5e-05
+critic_lr:5e-05
+max_kl:0.01
+beta:1
+gamma:0.99
+max_step:1000
+batch_size:4096
+critic_mini_batch:4096
+mini_batch:1024
+policy_mini_epoch:5
+critic_mini_epoch:5
+penalty:True
+line_search:False
+l2_norm:False
+l2_norm_weight:0.01
+use_entropy:False
+pre_train:False
+pre_train_lr:[3e-05, 3e-05, 3e-05]
+pre_train_epoch:0
+critic_penalty:True
+penalty_weight:1.5

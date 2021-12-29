@@ -5,136 +5,145 @@ from utils import *
 import torch
 from torch import FloatTensor
 import random
-from net import *
+import torch.nn.functional as F
 
 
 class PPO:
-    def __init__(self, state_dim, action_dim, config, n_step=5, synchronize_steps=1, mini_batch=100):
-        self.collect_pnet = PolicyNetwork(state_dim, action_dim)
-        self.pnet = PolicyNetwork(state_dim, action_dim)
-        self.optimizer = torch.optim.Adam(self.pnet.parameters(), eps=1e-4)
-        self.synchronize_steps = synchronize_steps
-        self.synchronize_step = 0
-        self.mini_batch = mini_batch
+    def __init__(self, train_param, lr,
+                 PolicyNet, ValueNet, targetValueNet,
+                 state_dim, action_dim, n_step=5):
+        self.train_param = train_param
+        self.beta = self.train_param['beta']
+        self.max_kl = train_param['max_kl']
+        self.policy = PolicyNet
+        self.value = ValueNet
+        self.target_value = targetValueNet
+        self.actor_optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr[0])
+        self.value_optimizer = torch.optim.Adam(self.target_value.parameters(), lr=lr[1])
         self.n_step = n_step
-        self.config = config
         self.action_dim = action_dim
         self.state_dim = state_dim
 
-    def L(self, dist, old_dist, acts, advs):
-        adl = (advs * torch.exp(
-            dist.log_prob(acts)
-            - old_dist.log_prob(acts).detach()
-        )).mean()
-        return adl
+    def compute_adv(self, batch, gamma):
+        s = batch["state"]
+        r = batch["reward"].reshape(-1, 1)
+        s1 = batch["next_state"]
+        done = batch["done"].reshape(-1, 1)
+        with torch.no_grad():
+            adv = r + gamma * (1 - done) * self.target_value(s1) - self.target_value(s)
+        return adv
 
-    def L_clip(self, advs, ratio, epsilon=0.2):
-        rated_advs = 0
+    def L_clip(self, adv, ratio, old_dist, obs, epsilon=0.2):
+        rated_adv = torch.zeros(len(adv))
         _grad = False
-        for i in range(len(advs)):
-            if advs[i] >= 0:
-                if ratio[i] > 1+epsilon:
-                    rated_advs += (1+epsilon) * advs[i]
-                else:
-                    rated_advs += ratio[i] * advs[i]
-                    _grad = True
+        for idx, (r, v) in enumerate(zip(ratio, adv)):
+            if v >= 0:
+                rated_adv[idx] = min(r, 1 + epsilon) * v
             else:
-                if ratio[i] < 1-epsilon:
-                    rated_advs += (1-epsilon) * advs[i]
-                else:
-                    rated_advs += ratio[i] * advs[i]
-                    _grad = True
-        rated_advs /= len(advs)
-        return -rated_advs, _grad
+                rated_adv[idx] = max(r, 1 - epsilon) * v
+        loss = torch.mean(-rated_adv)
+        if self.train_param['penalty']:
+            dist = self.policy(obs)
+            kld = kl_divergence(dist, old_dist, self.action_dim, require_grad=True)
+            loss -= self.beta * kld
+        return loss
 
     def rescale_and_line_search(self, old_dist, new_param, old_param, obs):
         d_param = new_param - old_param
         alpha = 1.0
         for _ in range(10):
             new_param = old_param + alpha * d_param
-            set_params(self.pnet, new_param)
-            dist = self.pnet(obs)
+            set_params(self.policy, new_param)
+            dist = self.policy(obs)
             kld = kl_divergence(dist, old_dist, self.action_dim)
-            if kld < 0.1:
+            if kld < self.max_kl:
                 return
             else:
                 alpha *= 0.7
-        set_params(self.pnet, old_param)
+        set_params(self.policy, old_param)
         print('step too large')
 
-    def update(self, obs, acts, gamma, vnet, dnet, epoches=5, kld_limit=False):
-        self.synchronize_step += 1
-        ######### update ########
-        _update = False
-        update_data = []
-        vnet.eval()
-        dnet.eval()
-        for i in range(len(obs)):
-            ob = obs[i]
-            if len(ob) <= self.n_step:
-                continue
-            act = acts[i]
-            ob, act = FloatTensor(ob), FloatTensor(act)
-            act[:, -1] *= 10
-            costs = torch.log(dnet(ob, act)).squeeze().detach()
-            rwds = -1 * costs
-            curr_val = vnet(ob).detach().view(-1)
-            nnext_val = curr_val[self.n_step:]
-            curr_val = curr_val[:len(curr_val)-self.n_step]
-            advs = gamma**self.n_step*nnext_val - curr_val
-            for k in range(self.n_step):
-                advs += gamma**k * rwds[k:k+len(curr_val)]
-            for k in range(len(advs)):
-                update_data.append((list(ob[k]), list(act[k]), advs[k]))
-        for epoch in range(epoches):
-            random.shuffle(update_data)
-            st = 0
-            self.pnet.train()
-            self.collect_pnet.eval()
-            while st < len(update_data):
-                ed = st + self.mini_batch
-                if ed > len(update_data):
-                    ed = len(update_data)
-                batch_data = update_data[st:ed]
-                _advs = []
-                _obs = []
-                _acts = []
-                for _ob, _act, _adv in batch_data:
-                    _obs.append(_ob)
-                    _acts.append(_act)
-                    _advs.append(_adv)
-                if len(_obs) < 2:
-                    break
-                _obs, _acts = FloatTensor(_obs), FloatTensor(_acts)
-                dist = self.pnet(_obs)
-                old_dist = self.collect_pnet(_obs)
-                _ratio = torch.exp(dist.log_prob(_acts) - old_dist.log_prob(_acts).detach())
-                loss, _grad = self.L_clip(_advs, _ratio)
-                # dist_causal_entropy = self.config['lambda_'] * (-1 * self.pnet(_obs).log_prob(_acts)).mean()
-                # loss -= dist_causal_entropy
-                if not _grad:
-                    st = ed
-                    continue
-                if torch.isnan(loss) or torch.isinf(loss):
-                    st = ed
-                    continue
-                old_param = get_flat_params(self.pnet)
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-                new_param = get_flat_params(self.pnet)
-                if kld_limit:
-                    self.rescale_and_line_search(dist, new_param, old_param, _obs)
-                st = ed
-        #########################
-        if self.synchronize_step >= self.synchronize_steps:
-            self.collect_pnet.load_state_dict(self.pnet.state_dict())
-            self.synchronize_step = 0
-            synchronize = 1
-        else:
-            synchronize = 0
+    def action(self, state):
+        dist = self.policy(state)
+        return dist.sample()
 
-        return synchronize
+    def dist(self, state, action=None):
+        _dist = self.policy(state)
+        if action is None:
+            action = _dist.sample()
+        log_prob = _dist.log_prob(action.reshape(_dist.sample().shape))
+        return _dist, log_prob
+
+    def soft_update(self, source, target, tau=0.01):
+        with torch.no_grad():
+            for target_param, param in zip(target.parameters(), source.parameters()):
+                target_param.data.copy_(target_param.data * (1.0 - tau) + param.data * tau)
+
+    def update(self, batch, gamma, mini_batch, kld_limit=False, value_only=False):
+        batch_size = len(batch["state"])
+        shuffle_idx = np.arange(batch_size).astype(np.long)
+        random.shuffle(shuffle_idx)
+        shuffle_idx = torch.from_numpy(shuffle_idx)
+        aloss = 0
+        vloss = 0
+        for _iter in range(batch_size // mini_batch):
+            idx = torch.arange(_iter*mini_batch, (_iter+1)*mini_batch)
+            idx = shuffle_idx[idx].long()
+            s = batch["state"][idx]
+            a = batch["action"][idx]
+            r = batch["reward"][idx].reshape(-1, 1)
+            s1 = batch["next_state"][idx]
+            adv = batch["adv"][idx]
+            done = batch["done"][idx].reshape(-1, 1)
+            old_log_prob = batch["log_prob"][idx].reshape(-1, 1)
+
+            td_target = r.float() + gamma * self.target_value(s1) * (1 - done)
+            value_loss = torch.mean(F.mse_loss(self.target_value(s), td_target.detach()))
+            if not (torch.isnan(value_loss) or torch.isinf(value_loss)):
+                self.value_optimizer.zero_grad()
+                value_loss.backward()
+                self.value_optimizer.step()
+            vloss += value_loss.detach()
+
+            current_dist = self.policy(s)
+            log_prob = current_dist.log_prob(a.reshape(current_dist.sample().shape)).reshape(-1, 1)
+            ratio = torch.exp(log_prob - old_log_prob.detach()).reshape(-1)
+            adv = adv.reshape(-1)
+            old_param = get_flat_params(self.policy).clone()
+            dist_entropy = torch.mean(current_dist.entropy())
+            actor_loss = self.L_clip(adv, ratio, old_dist=current_dist, obs=s)
+            if self.train_param['use_entropy']:
+                actor_loss -= dist_entropy * 0.01
+            if self.train_param['l2_norm']:
+                actor_loss += self.train_param['l2_norm_weight'] * torch.mean(get_flat_params(self.policy))
+            if not (torch.isnan(actor_loss) or torch.isinf(actor_loss)):
+                if not value_only:
+                    self.actor_optimizer.zero_grad()
+                    actor_loss.backward()
+                    self.actor_optimizer.step()
+            new_param = get_flat_params(self.policy)
+            if self.train_param['line_search']:
+                self.rescale_and_line_search(current_dist, new_param, old_param, s)
+            new_dist = self.policy(s)
+            kld = kl_divergence(new_dist, current_dist, self.action_dim)
+            if self.train_param['penalty']:
+                if kld < self.max_kl / 1.5:
+                    self.beta /= 2
+                if kld > self.max_kl * 1.5:
+                    self.beta *= 2
+
+            aloss += actor_loss.detach()
+
+            self.soft_update(self.value, self.target_value, 0.01)
+            self.value.load_state_dict(self.target_value.state_dict())
+
+        return vloss, aloss
+
+    def print_param(self):
+        policy_param = get_flat_params(self.policy)
+        value_param = get_flat_params(self.value)
+        print(torch.max(policy_param))
+        print(torch.max(value_param))
 
     def get_pnet(self):
-        return self.pnet
+        return self.policy

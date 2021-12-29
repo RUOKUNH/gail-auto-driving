@@ -1,0 +1,184 @@
+
+
+
+Tue Dec 28 14:55:32 2021
+train_params:
+policy_net:[512, 256, 128, 64]
+policy_net_drop_rate:None
+value_net:[512, 256, 128, 64]
+value_net_drop_rate:None
+critic_net:[512, 256, 128, 64]
+critic_net_drop_rate:None
+state_dim:65
+action_dim:2
+policy_lr:5e-05
+value_lr:5e-05
+critic_lr:5e-05
+max_kl:0.01
+beta:1
+gamma:0.99
+max_step:1000
+batch_size:4096
+critic_mini_batch:4096
+mini_batch:1024
+policy_mini_epoch:2
+critic_mini_epoch:2
+penalty:True
+line_search:False
+l2_norm:False
+l2_norm_weight:0.01
+use_entropy:False
+pre_train:False
+pre_train_lr:[3e-05, 3e-05, 3e-05]
+pre_train_epoch:0
+critic_penalty:False
+penalty_weight:1.5
+gail-feature16-smallstep episode 0 critic loss 2.73 actor loss -0.04 value loss 7.90 mdist 24.4 srate 0.000 exp_score 0.48 gen_score 0.47 time 68.74765300750732
+gail-feature16-smallstep episode 1 critic loss 2.69 actor loss -0.02 value loss 7.70 mdist 23.0 srate 0.000 exp_score 0.48 gen_score 0.46 time 92.24621605873108
+gail-feature16-smallstep episode 2 critic loss 2.68 actor loss -0.03 value loss 7.47 mdist 28.2 srate 0.000 exp_score 0.48 gen_score 0.45 time 104.37601327896118
+gail-feature16-smallstep episode 3 critic loss 2.64 actor loss -0.01 value loss 7.33 mdist 31.5 srate 0.000 exp_score 0.48 gen_score 0.44 time 91.90114045143127
+gail-feature16-smallstep episode 4 critic loss 2.65 actor loss -0.03 value loss 7.10 mdist 29.0 srate 0.000 exp_score 0.48 gen_score 0.44 time 84.17282748222351
+gail-feature16-smallstep episode 5 critic loss 2.63 actor loss -0.05 value loss 7.39 mdist 28.4 srate 0.000 exp_score 0.48 gen_score 0.43 time 74.76188945770264
+gail-feature16-smallstep episode 6 critic loss 2.58 actor loss -0.04 value loss 7.65 mdist 34.6 srate 0.000 exp_score 0.48 gen_score 0.42 time 81.24957346916199
+gail-feature16-smallstep episode 7 critic loss 2.59 actor loss -0.05 value loss 8.81 mdist 30.1 srate 0.000 exp_score 0.47 gen_score 0.42 time 78.75167775154114
+gail-feature16-smallstep episode 8 critic loss 2.59 actor loss -0.05 value loss 9.13 mdist 31.7 srate 0.000 exp_score 0.47 gen_score 0.42 time 71.01532745361328
+gail-feature16-smallstep episode 9 critic loss 2.60 actor loss -0.07 value loss 9.82 mdist 30.6 srate 0.000 exp_score 0.47 gen_score 0.42 time 74.26091241836548
+gail-feature16-smallstep episode 10 critic loss 2.61 actor loss -0.09 value loss 10.88 mdist 39.2 srate 0.000 exp_score 0.47 gen_score 0.42 time 62.06235480308533
+gail-feature16-smallstep episode 11 critic loss 2.60 actor loss -0.13 value loss 13.26 mdist 39.2 srate 0.000 exp_score 0.47 gen_score 0.42 time 70.97761726379395
+gail-feature16-smallstep episode 12 critic loss 2.62 actor loss -0.15 value loss 13.48 mdist 47.6 srate 0.000 exp_score 0.47 gen_score 0.42 time 62.211663246154785
+gail-feature16-smallstep episode 13 critic loss 2.63 actor loss -0.19 value loss 14.46 mdist 47.1 srate 0.000 exp_score 0.47 gen_score 0.42 time 64.05763936042786
+gail-feature16-smallstep episode 14 critic loss 2.66 actor loss -0.21 value loss 12.55 mdist 56.7 srate 0.000 exp_score 0.47 gen_score 0.43 time 66.87884521484375
+gail-feature16-smallstep episode 15 critic loss 2.67 actor loss -0.23 value loss 11.30 mdist 70.8 srate 0.000 exp_score 0.47 gen_score 0.44 time 56.149306535720825
+gail-feature16-smallstep episode 16 critic loss 2.69 actor loss -0.25 value loss 8.93 mdist 71.8 srate 0.017 exp_score 0.47 gen_score 0.44 time 55.68272376060486
+gail-feature16-smallstep episode 17 critic loss 2.71 actor loss -0.16 value loss 8.15 mdist 49.6 srate 0.017 exp_score 0.46 gen_score 0.45 time 56.73906588554382
+gail-feature16-smallstep episode 18 critic loss 2.71 actor loss -0.13 value loss 8.82 mdist 74.9 srate 0.000 exp_score 0.47 gen_score 0.44 time 56.49546957015991
+gail-feature16-smallstep episode 19 critic loss 2.71 actor loss -0.24 value loss 6.65 mdist 82.0 srate 0.016 exp_score 0.47 gen_score 0.45 time 58.21431231498718
+gail-feature16-smallstep episode 20 critic loss 2.71 actor loss -0.17 value loss 10.01 mdist 95.9 srate 0.000 exp_score 0.47 gen_score 0.45 time 58.71688365936279
+gail-feature16-smallstep episode 21 critic loss 2.71 actor loss -0.05 value loss 8.71 mdist 75.4 srate 0.000 exp_score 0.47 gen_score 0.45 time 55.05387854576111
+gail-feature16-smallstep episode 22 critic loss 2.71 actor loss -0.05 value loss 11.32 mdist 72.3 srate 0.000 exp_score 0.47 gen_score 0.45 time 65.77571177482605
+gail-feature16-smallstep episode 23 critic loss 2.72 actor loss -0.07 value loss 8.39 mdist 99.5 srate 0.050 exp_score 0.47 gen_score 0.45 time 45.661364793777466
+gail-feature16-smallstep episode 24 critic loss 2.69 actor loss -0.01 value loss 15.00 mdist 86.2 srate 0.017 exp_score 0.47 gen_score 0.45 time 72.53386998176575
+gail-feature16-smallstep episode 25 critic loss 2.68 actor loss -0.06 value loss 14.29 mdist 76.9 srate 0.000 exp_score 0.47 gen_score 0.44 time 57.80730438232422
+gail-feature16-smallstep episode 26 critic loss 2.69 actor loss -0.05 value loss 10.71 mdist 73.6 srate 0.050 exp_score 0.47 gen_score 0.45 time 47.0876739025116
+gail-feature16-smallstep episode 27 critic loss 2.68 actor loss -0.06 value loss 11.55 mdist 70.1 srate 0.000 exp_score 0.47 gen_score 0.45 time 49.69758129119873
+gail-feature16-smallstep episode 28 critic loss 2.66 actor loss -0.04 value loss 15.48 mdist 99.7 srate 0.000 exp_score 0.48 gen_score 0.44 time 49.782504081726074
+gail-feature16-smallstep episode 29 critic loss 2.66 actor loss -0.02 value loss 20.94 mdist 80.3 srate 0.025 exp_score 0.48 gen_score 0.44 time 53.03065490722656
+gail-feature16-smallstep episode 30 critic loss 2.64 actor loss 0.06 value loss 40.22 mdist 85.7 srate 0.000 exp_score 0.48 gen_score 0.44 time 73.8710343837738
+gail-feature16-smallstep episode 31 critic loss 2.62 actor loss 0.02 value loss 43.76 mdist 89.1 srate 0.067 exp_score 0.48 gen_score 0.43 time 67.73839950561523
+gail-feature16-smallstep episode 32 critic loss 2.63 actor loss 0.00 value loss 25.71 mdist 103.7 srate 0.000 exp_score 0.48 gen_score 0.44 time 50.441413164138794
+gail-feature16-smallstep episode 33 critic loss 2.61 actor loss 0.09 value loss 46.50 mdist 79.8 srate 0.017 exp_score 0.48 gen_score 0.43 time 72.69522953033447
+gail-feature16-smallstep episode 34 critic loss 2.57 actor loss 0.01 value loss 56.14 mdist 81.1 srate 0.067 exp_score 0.48 gen_score 0.42 time 74.88956665992737
+gail-feature16-smallstep episode 35 critic loss 2.59 actor loss -0.03 value loss 38.40 mdist 137.4 srate 0.025 exp_score 0.49 gen_score 0.43 time 48.298856258392334
+gail-feature16-smallstep episode 36 critic loss 2.55 actor loss -0.04 value loss 42.46 mdist 99.6 srate 0.050 exp_score 0.48 gen_score 0.42 time 44.805537700653076
+gail-feature16-smallstep episode 37 critic loss 2.55 actor loss -0.04 value loss 46.08 mdist 113.8 srate 0.025 exp_score 0.49 gen_score 0.42 time 48.855278968811035
+gail-feature16-smallstep episode 38 critic loss 2.54 actor loss 0.06 value loss 36.20 mdist 82.7 srate 0.025 exp_score 0.49 gen_score 0.42 time 593.2186980247498
+gail-feature16-smallstep episode 39 critic loss 2.50 actor loss 0.08 value loss 59.22 mdist 93.4 srate 0.050 exp_score 0.49 gen_score 0.41 time 65.0366313457489
+gail-feature16-smallstep episode 40 critic loss 2.49 actor loss -0.02 value loss 34.58 mdist 87.9 srate 0.049 exp_score 0.49 gen_score 0.41 time 48.804354667663574
+gail-feature16-smallstep episode 41 critic loss 2.50 actor loss -0.03 value loss 51.87 mdist 114.8 srate 0.095 exp_score 0.49 gen_score 0.41 time 45.111794233322144
+gail-feature16-smallstep episode 42 critic loss 2.42 actor loss 0.01 value loss 57.02 mdist 150.5 srate 0.100 exp_score 0.49 gen_score 0.38 time 49.16869139671326
+gail-feature16-smallstep episode 43 critic loss 2.46 actor loss -0.04 value loss 55.21 mdist 70.9 srate 0.000 exp_score 0.49 gen_score 0.40 time 71.9581549167633
+gail-feature16-smallstep episode 44 critic loss 2.45 actor loss -0.08 value loss 50.59 mdist 99.4 srate 0.000 exp_score 0.49 gen_score 0.40 time 49.71225452423096
+gail-feature16-smallstep episode 45 critic loss 2.35 actor loss -0.01 value loss 74.82 mdist 85.5 srate 0.050 exp_score 0.50 gen_score 0.37 time 61.44055128097534
+gail-feature16-smallstep episode 46 critic loss 2.36 actor loss -0.07 value loss 64.73 mdist 69.0 srate 0.000 exp_score 0.50 gen_score 0.38 time 58.77086806297302
+gail-feature16-smallstep episode 47 critic loss 2.29 actor loss 0.02 value loss 110.86 mdist 66.1 srate 0.037 exp_score 0.50 gen_score 0.35 time 78.78584289550781
+gail-feature16-smallstep episode 48 critic loss 2.28 actor loss -0.01 value loss 72.95 mdist 78.3 srate 0.017 exp_score 0.50 gen_score 0.36 time 65.97949361801147
+gail-feature16-smallstep episode 49 critic loss 2.22 actor loss 0.02 value loss 79.42 mdist 67.3 srate 0.000 exp_score 0.50 gen_score 0.34 time 57.46974182128906
+gail-feature16-smallstep episode 50 critic loss 2.27 actor loss -0.07 value loss 52.53 mdist 72.7 srate 0.048 exp_score 0.50 gen_score 0.35 time 65.15024900436401
+gail-feature16-smallstep episode 51 critic loss 2.24 actor loss 0.04 value loss 74.90 mdist 73.9 srate 0.017 exp_score 0.51 gen_score 0.35 time 68.44731760025024
+gail-feature16-smallstep episode 52 critic loss 2.13 actor loss -0.01 value loss 101.84 mdist 76.2 srate 0.000 exp_score 0.51 gen_score 0.32 time 77.68124032020569
+gail-feature16-smallstep episode 53 critic loss 2.12 actor loss -0.02 value loss 73.34 mdist 94.3 srate 0.017 exp_score 0.52 gen_score 0.32 time 65.44206643104553
+gail-feature16-smallstep episode 54 critic loss 2.03 actor loss -0.05 value loss 52.81 mdist 73.8 srate 0.033 exp_score 0.52 gen_score 0.30 time 63.50841188430786
+gail-feature16-smallstep episode 55 critic loss 1.99 actor loss -0.05 value loss 63.58 mdist 69.9 srate 0.000 exp_score 0.53 gen_score 0.28 time 53.63083529472351
+gail-feature16-smallstep episode 56 critic loss 2.03 actor loss -0.04 value loss 87.31 mdist 85.5 srate 0.017 exp_score 0.53 gen_score 0.30 time 69.92298698425293
+gail-feature16-smallstep episode 57 critic loss 1.89 actor loss -0.02 value loss 68.94 mdist 86.0 srate 0.017 exp_score 0.54 gen_score 0.27 time 58.44726610183716
+gail-feature16-smallstep episode 58 critic loss 1.87 actor loss -0.04 value loss 59.11 mdist 90.2 srate 0.050 exp_score 0.55 gen_score 0.26 time 60.37114095687866
+gail-feature16-smallstep episode 59 critic loss 1.84 actor loss -0.05 value loss 86.95 mdist 83.2 srate 0.050 exp_score 0.55 gen_score 0.26 time 74.78791999816895
+gail-feature16-smallstep episode 60 critic loss 1.81 actor loss -0.02 value loss 64.68 mdist 64.9 srate 0.013 exp_score 0.56 gen_score 0.26 time 67.74182677268982
+gail-feature16-smallstep episode 61 critic loss 1.77 actor loss -0.03 value loss 54.66 mdist 69.5 srate 0.033 exp_score 0.57 gen_score 0.25 time 59.64631628990173
+gail-feature16-smallstep episode 62 critic loss 1.68 actor loss -0.04 value loss 55.10 mdist 71.7 srate 0.032 exp_score 0.58 gen_score 0.23 time 57.577924489974976
+gail-feature16-smallstep episode 63 critic loss 1.71 actor loss -0.06 value loss 77.46 mdist 51.7 srate 0.000 exp_score 0.58 gen_score 0.24 time 75.47915291786194
+gail-feature16-smallstep episode 64 critic loss 1.59 actor loss -0.07 value loss 57.88 mdist 61.1 srate 0.014 exp_score 0.59 gen_score 0.21 time 78.60010194778442
+gail-feature16-smallstep episode 65 critic loss 1.67 actor loss -0.03 value loss 73.02 mdist 55.4 srate 0.000 exp_score 0.60 gen_score 0.24 time 62.81791353225708
+gail-feature16-smallstep episode 66 critic loss 1.60 actor loss -0.06 value loss 64.76 mdist 73.7 srate 0.016 exp_score 0.60 gen_score 0.23 time 62.496500730514526
+gail-feature16-smallstep episode 67 critic loss 1.60 actor loss -0.07 value loss 56.75 mdist 58.8 srate 0.048 exp_score 0.61 gen_score 0.23 time 61.57649230957031
+gail-feature16-smallstep episode 68 critic loss 1.68 actor loss -0.07 value loss 73.63 mdist 109.5 srate 0.025 exp_score 0.61 gen_score 0.27 time 48.62519598007202
+gail-feature16-smallstep episode 69 critic loss 1.67 actor loss -0.07 value loss 81.30 mdist 84.3 srate 0.017 exp_score 0.62 gen_score 0.26 time 66.8015809059143
+gail-feature16-smallstep episode 70 critic loss 1.63 actor loss -0.10 value loss 60.38 mdist 69.8 srate 0.000 exp_score 0.62 gen_score 0.25 time 64.69332599639893
+gail-feature16-smallstep episode 71 critic loss 1.64 actor loss 0.03 value loss 63.04 mdist 52.5 srate 0.000 exp_score 0.62 gen_score 0.24 time 69.77635979652405
+gail-feature16-smallstep episode 72 critic loss 1.74 actor loss -0.07 value loss 95.60 mdist 70.9 srate 0.000 exp_score 0.62 gen_score 0.27 time 71.7659649848938
+gail-feature16-smallstep episode 73 critic loss 1.66 actor loss -0.13 value loss 81.52 mdist 73.7 srate 0.015 exp_score 0.62 gen_score 0.25 time 66.86519050598145
+gail-feature16-smallstep episode 74 critic loss 1.77 actor loss -0.03 value loss 113.97 mdist 59.5 srate 0.000 exp_score 0.63 gen_score 0.28 time 65.41999936103821
+gail-feature16-smallstep episode 75 critic loss 1.61 actor loss -0.17 value loss 78.02 mdist 72.1 srate 0.000 exp_score 0.63 gen_score 0.23 time 66.57442831993103
+gail-feature16-smallstep episode 76 critic loss 1.69 actor loss -0.06 value loss 103.93 mdist 49.1 srate 0.000 exp_score 0.62 gen_score 0.25 time 297.83278131484985
+gail-feature16-smallstep episode 77 critic loss 1.60 actor loss -0.10 value loss 81.07 mdist 69.7 srate 0.000 exp_score 0.63 gen_score 0.24 time 3364.8779072761536
+gail-feature16-smallstep episode 78 critic loss 1.68 actor loss -0.04 value loss 66.81 mdist 52.5 srate 0.000 exp_score 0.63 gen_score 0.24 time 58.05491280555725
+gail-feature16-smallstep episode 79 critic loss 1.62 actor loss -0.00 value loss 69.15 mdist 47.7 srate 0.000 exp_score 0.65 gen_score 0.24 time 51.856576919555664
+gail-feature16-smallstep episode 80 critic loss 1.44 actor loss -0.01 value loss 88.57 mdist 58.3 srate 0.000 exp_score 0.66 gen_score 0.20 time 67.62116646766663
+gail-feature16-smallstep episode 81 critic loss 1.51 actor loss -0.02 value loss 68.52 mdist 66.9 srate 0.017 exp_score 0.67 gen_score 0.22 time 48.87266230583191
+gail-feature16-smallstep episode 82 critic loss 1.43 actor loss -0.01 value loss 72.28 mdist 55.8 srate 0.000 exp_score 0.68 gen_score 0.22 time 54.56821322441101
+gail-feature16-smallstep episode 83 critic loss 1.27 actor loss -0.04 value loss 87.19 mdist 56.8 srate 0.013 exp_score 0.69 gen_score 0.18 time 63.1482195854187
+gail-feature16-smallstep episode 84 critic loss 1.30 actor loss -0.04 value loss 69.99 mdist 67.1 srate 0.000 exp_score 0.70 gen_score 0.19 time 55.600666999816895
+gail-feature16-smallstep episode 85 critic loss 1.20 actor loss -0.04 value loss 83.02 mdist 49.4 srate 0.000 exp_score 0.70 gen_score 0.16 time 64.71718978881836
+gail-feature16-smallstep episode 86 critic loss 1.09 actor loss -0.02 value loss 68.38 mdist 35.8 srate 0.000 exp_score 0.71 gen_score 0.14 time 56.487021923065186
+gail-feature16-smallstep episode 87 critic loss 1.04 actor loss -0.05 value loss 67.52 mdist 48.8 srate 0.000 exp_score 0.72 gen_score 0.13 time 61.9906370639801
+gail-feature16-smallstep episode 88 critic loss 0.98 actor loss -0.04 value loss 68.58 mdist 60.8 srate 0.025 exp_score 0.74 gen_score 0.13 time 60.248701333999634
+gail-feature16-smallstep episode 89 critic loss 1.03 actor loss -0.02 value loss 60.52 mdist 62.1 srate 0.000 exp_score 0.75 gen_score 0.14 time 49.99870824813843
+gail-feature16-smallstep episode 90 critic loss 0.94 actor loss -0.02 value loss 75.88 mdist 43.2 srate 0.000 exp_score 0.76 gen_score 0.11 time 62.63874387741089
+gail-feature16-smallstep episode 91 critic loss 0.91 actor loss -0.06 value loss 69.49 mdist 59.3 srate 0.000 exp_score 0.77 gen_score 0.14 time 47.720568895339966
+gail-feature16-smallstep episode 92 critic loss 0.92 actor loss -0.08 value loss 66.27 mdist 49.9 srate 0.000 exp_score 0.78 gen_score 0.15 time 52.98807621002197
+gail-feature16-smallstep episode 93 critic loss 0.94 actor loss -0.11 value loss 84.91 mdist 75.2 srate 0.000 exp_score 0.79 gen_score 0.15 time 55.05406951904297
+gail-feature16-smallstep episode 94 critic loss 0.82 actor loss -0.07 value loss 96.60 mdist 50.8 srate 0.000 exp_score 0.79 gen_score 0.12 time 56.182188987731934
+gail-feature16-smallstep episode 95 critic loss 0.96 actor loss -0.06 value loss 80.21 mdist 66.7 srate 0.000 exp_score 0.80 gen_score 0.17 time 63.67702341079712
+gail-feature16-smallstep episode 96 critic loss 0.94 actor loss -0.02 value loss 88.25 mdist 63.3 srate 0.000 exp_score 0.78 gen_score 0.15 time 51.760600090026855
+gail-feature16-smallstep episode 97 critic loss 0.97 actor loss 0.02 value loss 63.16 mdist 56.7 srate 0.017 exp_score 0.78 gen_score 0.15 time 57.00226616859436
+gail-feature16-smallstep episode 98 critic loss 0.89 actor loss 0.01 value loss 73.65 mdist 67.4 srate 0.017 exp_score 0.78 gen_score 0.12 time 55.053810596466064
+gail-feature16-smallstep episode 99 critic loss 0.87 actor loss -0.02 value loss 61.54 mdist 58.1 srate 0.000 exp_score 0.78 gen_score 0.11 time 56.27024960517883
+gail-feature16-smallstep episode 100 critic loss 0.91 actor loss 0.00 value loss 49.45 mdist 43.7 srate 0.000 exp_score 0.79 gen_score 0.12 time 68.8788378238678
+gail-feature16-smallstep episode 101 critic loss 0.86 actor loss -0.10 value loss 35.19 mdist 69.9 srate 0.017 exp_score 0.78 gen_score 0.11 time 51.94692873954773
+gail-feature16-smallstep episode 102 critic loss 0.94 actor loss -0.11 value loss 40.88 mdist 67.4 srate 0.000 exp_score 0.78 gen_score 0.14 time 56.17538809776306
+gail-feature16-smallstep episode 103 critic loss 0.99 actor loss -0.10 value loss 38.89 mdist 59.2 srate 0.016 exp_score 0.79 gen_score 0.14 time 49.15144610404968
+gail-feature16-smallstep episode 104 critic loss 0.93 actor loss -0.11 value loss 52.23 mdist 71.9 srate 0.014 exp_score 0.80 gen_score 0.14 time 59.59898829460144
+gail-feature16-smallstep episode 105 critic loss 0.82 actor loss -0.09 value loss 48.03 mdist 50.9 srate 0.000 exp_score 0.81 gen_score 0.11 time 59.640180349349976
+gail-feature16-smallstep episode 106 critic loss 0.75 actor loss -0.10 value loss 43.07 mdist 39.5 srate 0.000 exp_score 0.81 gen_score 0.09 time 57.27443885803223
+gail-feature16-smallstep episode 107 critic loss 0.73 actor loss -0.05 value loss 37.55 mdist 41.2 srate 0.000 exp_score 0.81 gen_score 0.09 time 71.65197944641113
+gail-feature16-smallstep episode 108 critic loss 0.85 actor loss 0.07 value loss 30.32 mdist 37.7 srate 0.011 exp_score 0.82 gen_score 0.13 time 69.36954045295715
+gail-feature16-smallstep episode 109 critic loss 0.64 actor loss 0.03 value loss 35.68 mdist 35.1 srate 0.000 exp_score 0.83 gen_score 0.07 time 71.83870339393616
+gail-feature16-smallstep episode 110 critic loss 0.57 actor loss -0.03 value loss 32.60 mdist 37.0 srate 0.000 exp_score 0.84 gen_score 0.06 time 71.47815322875977
+gail-feature16-smallstep episode 111 critic loss 0.52 actor loss -0.05 value loss 29.69 mdist 42.8 srate 0.000 exp_score 0.84 gen_score 0.04 time 62.07339859008789
+gail-feature16-smallstep episode 112 critic loss 0.51 actor loss -0.06 value loss 35.79 mdist 38.4 srate 0.000 exp_score 0.85 gen_score 0.06 time 72.05709743499756
+gail-feature16-smallstep episode 113 critic loss 0.47 actor loss 0.04 value loss 45.31 mdist 43.1 srate 0.000 exp_score 0.87 gen_score 0.06 time 68.42757844924927
+gail-feature16-smallstep episode 114 critic loss 0.57 actor loss -0.02 value loss 42.83 mdist 49.9 srate 0.012 exp_score 0.89 gen_score 0.11 time 57.76211404800415
+gail-feature16-smallstep episode 115 critic loss 0.46 actor loss -0.04 value loss 42.48 mdist 46.0 srate 0.000 exp_score 0.88 gen_score 0.07 time 66.00438785552979
+gail-feature16-smallstep episode 116 critic loss 0.62 actor loss -0.05 value loss 48.23 mdist 62.1 srate 0.011 exp_score 0.90 gen_score 0.11 time 65.70647740364075
+gail-feature16-smallstep episode 117 critic loss 0.58 actor loss -0.03 value loss 48.86 mdist 69.7 srate 0.048 exp_score 0.89 gen_score 0.10 time 60.60108232498169
+gail-feature16-smallstep episode 118 critic loss 0.55 actor loss -0.03 value loss 51.91 mdist 64.3 srate 0.037 exp_score 0.88 gen_score 0.08 time 58.48275923728943
+gail-feature16-smallstep episode 119 critic loss 0.56 actor loss 0.12 value loss 72.17 mdist 71.6 srate 0.025 exp_score 0.88 gen_score 0.08 time 78.45364356040955
+gail-feature16-smallstep episode 120 critic loss 0.46 actor loss -0.03 value loss 37.39 mdist 63.6 srate 0.033 exp_score 0.86 gen_score 0.04 time 57.88997292518616
+gail-feature16-smallstep episode 121 critic loss 0.44 actor loss 0.02 value loss 34.23 mdist 85.9 srate 0.050 exp_score 0.88 gen_score 0.03 time 59.114422082901
+gail-feature16-smallstep episode 122 critic loss 0.44 actor loss -0.04 value loss 30.43 mdist 83.7 srate 0.033 exp_score 0.88 gen_score 0.05 time 57.65138077735901
+gail-feature16-smallstep episode 123 critic loss 0.51 actor loss -0.02 value loss 36.43 mdist 64.6 srate 0.062 exp_score 0.90 gen_score 0.09 time 59.43216824531555
+gail-feature16-smallstep episode 124 critic loss 0.50 actor loss 0.05 value loss 39.54 mdist 66.4 srate 0.000 exp_score 0.91 gen_score 0.09 time 68.30986261367798
+gail-feature16-smallstep episode 125 critic loss 0.37 actor loss 0.00 value loss 31.05 mdist 98.7 srate 0.063 exp_score 0.91 gen_score 0.04 time 55.04424214363098
+gail-feature16-smallstep episode 126 critic loss 0.57 actor loss -0.01 value loss 41.16 mdist 103.7 srate 0.100 exp_score 0.91 gen_score 0.11 time 50.5640823841095
+gail-feature16-smallstep episode 127 critic loss 0.42 actor loss -0.03 value loss 30.27 mdist 79.9 srate 0.050 exp_score 0.91 gen_score 0.07 time 54.009037256240845
+gail-feature16-smallstep episode 128 critic loss 0.53 actor loss 0.57 value loss 57.84 mdist 76.4 srate 0.017 exp_score 0.91 gen_score 0.09 time 73.6654098033905
+gail-feature16-smallstep episode 129 critic loss 0.47 actor loss 0.03 value loss 39.59 mdist 95.4 srate 0.065 exp_score 0.90 gen_score 0.07 time 41.67690563201904
+gail-feature16-smallstep episode 130 critic loss 0.51 actor loss 0.12 value loss 68.68 mdist 77.7 srate 0.033 exp_score 0.90 gen_score 0.09 time 74.21745300292969
+gail-feature16-smallstep episode 131 critic loss 0.41 actor loss -0.01 value loss 46.45 mdist 72.0 srate 0.017 exp_score 0.90 gen_score 0.05 time 57.06482481956482
+gail-feature16-smallstep episode 132 critic loss 0.40 actor loss 0.06 value loss 47.30 mdist 90.5 srate 0.016 exp_score 0.89 gen_score 0.04 time 61.45192527770996
+gail-feature16-smallstep episode 133 critic loss 0.41 actor loss 0.09 value loss 62.02 mdist 63.1 srate 0.000 exp_score 0.90 gen_score 0.05 time 71.3421950340271
+gail-feature16-smallstep episode 134 critic loss 0.43 actor loss -0.02 value loss 47.02 mdist 56.2 srate 0.000 exp_score 0.90 gen_score 0.07 time 62.269837856292725
+gail-feature16-smallstep episode 135 critic loss 0.41 actor loss -0.04 value loss 50.38 mdist 78.1 srate 0.000 exp_score 0.91 gen_score 0.06 time 61.73370552062988
+gail-feature16-smallstep episode 136 critic loss 0.48 actor loss -0.07 value loss 58.83 mdist 85.2 srate 0.000 exp_score 0.91 gen_score 0.08 time 69.0673201084137
+gail-feature16-smallstep episode 137 critic loss 0.37 actor loss -0.02 value loss 39.94 mdist 60.3 srate 0.000 exp_score 0.91 gen_score 0.05 time 51.40871524810791
+gail-feature16-smallstep episode 138 critic loss 0.45 actor loss -0.01 value loss 83.83 mdist 59.1 srate 0.000 exp_score 0.91 gen_score 0.08 time 73.07522511482239
+gail-feature16-smallstep episode 139 critic loss 0.50 actor loss -0.01 value loss 39.46 mdist 45.3 srate 0.000 exp_score 0.92 gen_score 0.10 time 60.52102994918823
+gail-feature16-smallstep episode 140 critic loss 0.43 actor loss 0.43 value loss 47.45 mdist 72.7 srate 0.000 exp_score 0.92 gen_score 0.08 time 59.19520878791809
+gail-feature16-smallstep episode 141 critic loss 0.62 actor loss -0.01 value loss 51.97 mdist 70.2 srate 0.000 exp_score 0.92 gen_score 0.12 time 60.60461616516113
+gail-feature16-smallstep episode 142 critic loss 0.43 actor loss -0.03 value loss 36.65 mdist 64.9 srate 0.000 exp_score 0.90 gen_score 0.06 time 57.23504090309143
+gail-feature16-smallstep episode 143 critic loss 0.57 actor loss 0.14 value loss 68.57 mdist 53.0 srate 0.000 exp_score 0.89 gen_score 0.08 time 53.638702630996704
+gail-feature16-smallstep episode 144 critic loss 0.59 actor loss -0.02 value loss 45.23 mdist 63.5 srate 0.000 exp_score 0.89 gen_score 0.09 time 56.525997161865234
+gail-feature16-smallstep episode 145 critic loss 0.58 actor loss 0.13 value loss 73.08 mdist 47.1 srate 0.000 exp_score 0.88 gen_score 0.07 time 78.12464547157288
+gail-feature16-smallstep episode 146 critic loss 0.55 actor loss -0.02 value loss 46.33 mdist 80.1 srate 0.000 exp_score 0.88 gen_score 0.06 time 57.45134735107422
+gail-feature16-smallstep episode 147 critic loss 0.50 actor loss -0.01 value loss 38.86 mdist 54.0 srate 0.000 exp_score 0.89 gen_score 0.07 time 52.36568784713745
+gail-feature16-smallstep episode 148 critic loss 0.48 actor loss -0.02 value loss 34.42 mdist 66.2 srate 0.000 exp_score 0.89 gen_score 0.05 time 49.6971971988678

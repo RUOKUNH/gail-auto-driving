@@ -1,0 +1,308 @@
+
+
+
+Tue Dec 28 10:07:01 2021
+train_params:
+policy_net:[512, 256, 128, 64]
+policy_net_drop_rate:None
+value_net:[512, 256, 128, 64]
+value_net_drop_rate:None
+critic_net:[512, 256, 128, 64]
+critic_net_drop_rate:None
+state_dim:65
+action_dim:2
+policy_lr:5e-05
+value_lr:5e-05
+critic_lr:5e-05
+max_kl:0.01
+beta:1
+gamma:0.99
+max_step:1000
+batch_size:4096
+critic_mini_batch:4096
+mini_batch:1024
+policy_mini_epoch:5
+critic_mini_epoch:5
+penalty:True
+line_search:False
+l2_norm:False
+l2_norm_weight:0.01
+use_entropy:False
+pre_train:False
+pre_train_lr:[3e-05, 3e-05, 3e-05]
+pre_train_epoch:0
+critic_penalty:False
+penalty_weight:1
+
+
+Tue Dec 28 10:15:43 2021
+train_params:
+policy_net:[512, 256, 128, 64]
+policy_net_drop_rate:None
+value_net:[512, 256, 128, 64]
+value_net_drop_rate:None
+critic_net:[512, 256, 128, 64]
+critic_net_drop_rate:None
+state_dim:65
+action_dim:2
+policy_lr:5e-05
+value_lr:5e-05
+critic_lr:5e-05
+max_kl:0.01
+beta:1
+gamma:0.99
+max_step:1000
+batch_size:4096
+critic_mini_batch:4096
+mini_batch:1024
+policy_mini_epoch:5
+critic_mini_epoch:5
+penalty:True
+line_search:False
+l2_norm:False
+l2_norm_weight:0.01
+use_entropy:False
+pre_train:False
+pre_train_lr:[3e-05, 3e-05, 3e-05]
+pre_train_epoch:0
+critic_penalty:False
+penalty_weight:1
+gail-feature16-nopenalty episode 0 critic loss 7.02 actor loss -0.24 value loss 18.39 mdist 30.0 srate 0.000 exp_score 0.48 gen_score 0.48 time 94.41094779968262
+gail-feature16-nopenalty episode 1 critic loss 6.88 actor loss -0.24 value loss 20.13 mdist 24.6 srate 0.000 exp_score 0.48 gen_score 0.46 time 90.42594265937805
+gail-feature16-nopenalty episode 2 critic loss 6.78 actor loss -0.25 value loss 22.98 mdist 25.4 srate 0.000 exp_score 0.48 gen_score 0.45 time 92.3089599609375
+gail-feature16-nopenalty episode 3 critic loss 6.65 actor loss -0.28 value loss 23.28 mdist 23.8 srate 0.000 exp_score 0.47 gen_score 0.44 time 121.04300832748413
+gail-feature16-nopenalty episode 4 critic loss 6.54 actor loss -0.21 value loss 22.04 mdist 21.7 srate 0.000 exp_score 0.47 gen_score 0.42 time 138.91871905326843
+gail-feature16-nopenalty episode 5 critic loss 6.38 actor loss -0.25 value loss 20.43 mdist 20.8 srate 0.000 exp_score 0.47 gen_score 0.40 time 104.90669870376587
+gail-feature16-nopenalty episode 6 critic loss 6.16 actor loss -0.43 value loss 24.52 mdist 28.0 srate 0.000 exp_score 0.47 gen_score 0.37 time 92.97495079040527
+gail-feature16-nopenalty episode 7 critic loss 6.02 actor loss -0.39 value loss 55.06 mdist 28.6 srate 0.000 exp_score 0.47 gen_score 0.34 time 111.66202449798584
+gail-feature16-nopenalty episode 8 critic loss 6.04 actor loss -0.41 value loss 71.91 mdist 27.6 srate 0.000 exp_score 0.47 gen_score 0.35 time 90.6599051952362
+gail-feature16-nopenalty episode 9 critic loss 6.16 actor loss -0.56 value loss 85.04 mdist 32.9 srate 0.008 exp_score 0.47 gen_score 0.37 time 77.37737345695496
+gail-feature16-nopenalty episode 10 critic loss 6.16 actor loss -0.87 value loss 86.64 mdist 47.0 srate 0.000 exp_score 0.47 gen_score 0.37 time 107.3979127407074
+gail-feature16-nopenalty episode 11 critic loss 6.17 actor loss -1.01 value loss 56.53 mdist 49.7 srate 0.000 exp_score 0.47 gen_score 0.37 time 73.9058096408844
+gail-feature16-nopenalty episode 12 critic loss 6.23 actor loss -1.17 value loss 33.98 mdist 54.0 srate 0.000 exp_score 0.48 gen_score 0.39 time 86.0046136379242
+gail-feature16-nopenalty episode 13 critic loss 6.26 actor loss -1.29 value loss 30.43 mdist 80.3 srate 0.017 exp_score 0.48 gen_score 0.40 time 97.33091688156128
+gail-feature16-nopenalty episode 14 critic loss 6.24 actor loss -1.04 value loss 24.37 mdist 95.8 srate 0.033 exp_score 0.48 gen_score 0.40 time 65.9510269165039
+gail-feature16-nopenalty episode 15 critic loss 6.34 actor loss -0.95 value loss 29.69 mdist 82.5 srate 0.000 exp_score 0.49 gen_score 0.42 time 78.75729036331177
+gail-feature16-nopenalty episode 16 critic loss 6.17 actor loss -1.06 value loss 30.81 mdist 124.2 srate 0.033 exp_score 0.49 gen_score 0.40 time 102.83304977416992
+gail-feature16-nopenalty episode 17 critic loss 6.08 actor loss -0.63 value loss 24.77 mdist 92.8 srate 0.033 exp_score 0.50 gen_score 0.40 time 67.63320970535278
+gail-feature16-nopenalty episode 18 critic loss 5.99 actor loss -0.42 value loss 38.82 mdist 89.1 srate 0.017 exp_score 0.51 gen_score 0.39 time 114.64654755592346
+gail-feature16-nopenalty episode 19 critic loss 5.96 actor loss -0.93 value loss 41.56 mdist 145.6 srate 0.075 exp_score 0.52 gen_score 0.40 time 70.63537430763245
+gail-feature16-nopenalty episode 20 critic loss 5.82 actor loss -0.62 value loss 100.51 mdist 113.5 srate 0.067 exp_score 0.53 gen_score 0.39 time 82.70679140090942
+gail-feature16-nopenalty episode 21 critic loss 5.65 actor loss -0.35 value loss 146.14 mdist 89.6 srate 0.050 exp_score 0.53 gen_score 0.38 time 118.53251957893372
+gail-feature16-nopenalty episode 22 critic loss 5.48 actor loss -0.54 value loss 128.77 mdist 123.9 srate 0.100 exp_score 0.55 gen_score 0.38 time 69.31302118301392
+gail-feature16-nopenalty episode 23 critic loss 5.47 actor loss -0.40 value loss 137.26 mdist 92.8 srate 0.000 exp_score 0.56 gen_score 0.38 time 62.97889828681946
+gail-feature16-nopenalty episode 24 critic loss 5.18 actor loss -0.30 value loss 211.21 mdist 77.6 srate 0.000 exp_score 0.57 gen_score 0.36 time 60.27556371688843
+gail-feature16-nopenalty episode 25 critic loss 5.17 actor loss -0.32 value loss 175.49 mdist 58.6 srate 0.033 exp_score 0.57 gen_score 0.35 time 97.11066055297852
+gail-feature16-nopenalty episode 26 critic loss 4.71 actor loss -0.27 value loss 208.53 mdist 47.0 srate 0.000 exp_score 0.59 gen_score 0.30 time 63.71288204193115
+gail-feature16-nopenalty episode 27 critic loss 4.70 actor loss -0.23 value loss 143.44 mdist 53.8 srate 0.000 exp_score 0.59 gen_score 0.31 time 70.13675475120544
+gail-feature16-nopenalty episode 28 critic loss 4.26 actor loss -0.27 value loss 158.48 mdist 45.5 srate 0.013 exp_score 0.61 gen_score 0.27 time 74.22659015655518
+gail-feature16-nopenalty episode 29 critic loss 4.04 actor loss -0.32 value loss 136.79 mdist 30.6 srate 0.000 exp_score 0.65 gen_score 0.26 time 83.30179071426392
+gail-feature16-nopenalty episode 30 critic loss 3.80 actor loss -0.53 value loss 146.13 mdist 45.9 srate 0.000 exp_score 0.67 gen_score 0.25 time 82.61809349060059
+gail-feature16-nopenalty episode 31 critic loss 4.04 actor loss -0.33 value loss 189.07 mdist 45.2 srate 0.000 exp_score 0.68 gen_score 0.28 time 81.19292974472046
+gail-feature16-nopenalty episode 32 critic loss 3.52 actor loss -0.18 value loss 148.14 mdist 33.5 srate 0.000 exp_score 0.69 gen_score 0.23 time 76.10680770874023
+gail-feature16-nopenalty episode 33 critic loss 3.08 actor loss -0.20 value loss 123.69 mdist 23.1 srate 0.000 exp_score 0.73 gen_score 0.20 time 78.94285178184509
+gail-feature16-nopenalty episode 34 critic loss 3.08 actor loss -0.40 value loss 132.32 mdist 34.6 srate 0.000 exp_score 0.75 gen_score 0.21 time 67.99521374702454
+gail-feature16-nopenalty episode 35 critic loss 2.63 actor loss -0.29 value loss 117.86 mdist 40.9 srate 0.000 exp_score 0.77 gen_score 0.18 time 79.46903538703918
+gail-feature16-nopenalty episode 36 critic loss 2.35 actor loss -0.17 value loss 92.83 mdist 38.0 srate 0.000 exp_score 0.79 gen_score 0.15 time 83.09255814552307
+gail-feature16-nopenalty episode 37 critic loss 2.65 actor loss -0.16 value loss 101.15 mdist 36.0 srate 0.000 exp_score 0.80 gen_score 0.20 time 77.1378870010376
+gail-feature16-nopenalty episode 38 critic loss 2.32 actor loss -0.27 value loss 96.13 mdist 34.4 srate 0.000 exp_score 0.80 gen_score 0.14 time 80.9529333114624
+gail-feature16-nopenalty episode 39 critic loss 2.24 actor loss -0.22 value loss 90.58 mdist 39.6 srate 0.000 exp_score 0.81 gen_score 0.13 time 73.48388981819153
+gail-feature16-nopenalty episode 40 critic loss 2.09 actor loss -0.23 value loss 67.97 mdist 38.0 srate 0.000 exp_score 0.85 gen_score 0.14 time 75.79600930213928
+gail-feature16-nopenalty episode 41 critic loss 1.74 actor loss -0.07 value loss 72.49 mdist 49.0 srate 0.000 exp_score 0.84 gen_score 0.12 time 64.41973686218262
+gail-feature16-nopenalty episode 42 critic loss 1.99 actor loss -0.25 value loss 101.92 mdist 56.4 srate 0.000 exp_score 0.85 gen_score 0.14 time 79.87471127510071
+gail-feature16-nopenalty episode 43 critic loss 1.79 actor loss -0.13 value loss 99.68 mdist 46.9 srate 0.000 exp_score 0.84 gen_score 0.12 time 69.03521084785461
+gail-feature16-nopenalty episode 44 critic loss 1.60 actor loss -0.20 value loss 79.06 mdist 41.1 srate 0.000 exp_score 0.86 gen_score 0.09 time 68.51357841491699
+gail-feature16-nopenalty episode 45 critic loss 1.90 actor loss -0.11 value loss 124.04 mdist 64.1 srate 0.000 exp_score 0.86 gen_score 0.13 time 82.4496910572052
+gail-feature16-nopenalty episode 46 critic loss 1.57 actor loss -0.28 value loss 76.90 mdist 66.0 srate 0.000 exp_score 0.88 gen_score 0.10 time 70.67053365707397
+gail-feature16-nopenalty episode 47 critic loss 1.55 actor loss -0.18 value loss 82.55 mdist 77.2 srate 0.000 exp_score 0.88 gen_score 0.11 time 74.0248670578003
+gail-feature16-nopenalty episode 48 critic loss 1.60 actor loss -0.21 value loss 79.60 mdist 64.8 srate 0.017 exp_score 0.88 gen_score 0.10 time 72.56818675994873
+gail-feature16-nopenalty episode 49 critic loss 1.58 actor loss -0.22 value loss 98.02 mdist 63.5 srate 0.017 exp_score 0.87 gen_score 0.10 time 64.13900136947632
+gail-feature16-nopenalty episode 50 critic loss 1.59 actor loss -0.14 value loss 137.88 mdist 64.9 srate 0.033 exp_score 0.89 gen_score 0.11 time 78.49111151695251
+gail-feature16-nopenalty episode 51 critic loss 1.28 actor loss -0.19 value loss 108.90 mdist 63.7 srate 0.037 exp_score 0.89 gen_score 0.07 time 78.14798927307129
+gail-feature16-nopenalty episode 52 critic loss 1.49 actor loss -0.22 value loss 93.35 mdist 93.5 srate 0.067 exp_score 0.91 gen_score 0.10 time 68.85560250282288
+gail-feature16-nopenalty episode 53 critic loss 1.13 actor loss -0.20 value loss 87.68 mdist 73.5 srate 0.100 exp_score 0.92 gen_score 0.08 time 82.3119010925293
+gail-feature16-nopenalty episode 54 critic loss 2.00 actor loss -0.20 value loss 108.89 mdist 87.7 srate 0.033 exp_score 0.91 gen_score 0.13 time 67.28325343132019
+gail-feature16-nopenalty episode 55 critic loss 1.11 actor loss -0.18 value loss 94.40 mdist 93.0 srate 0.117 exp_score 0.88 gen_score 0.05 time 68.67123007774353
+gail-feature16-nopenalty episode 56 critic loss 1.38 actor loss -0.14 value loss 107.58 mdist 91.1 srate 0.097 exp_score 0.91 gen_score 0.09 time 70.26388764381409
+gail-feature16-nopenalty episode 57 critic loss 1.29 actor loss -0.11 value loss 149.91 mdist 86.1 srate 0.081 exp_score 0.92 gen_score 0.09 time 74.55161952972412
+gail-feature16-nopenalty episode 58 critic loss 1.34 actor loss -0.17 value loss 107.33 mdist 66.3 srate 0.033 exp_score 0.91 gen_score 0.08 time 57.814178228378296
+gail-feature16-nopenalty episode 59 critic loss 0.88 actor loss -0.16 value loss 96.51 mdist 86.3 srate 0.033 exp_score 0.93 gen_score 0.05 time 73.53622198104858
+gail-feature16-nopenalty episode 60 critic loss 1.14 actor loss -0.22 value loss 100.56 mdist 97.7 srate 0.067 exp_score 0.93 gen_score 0.08 time 64.34843802452087
+gail-feature16-nopenalty episode 61 critic loss 1.27 actor loss 1.21 value loss 165.50 mdist 98.9 srate 0.033 exp_score 0.92 gen_score 0.07 time 77.17016553878784
+gail-feature16-nopenalty episode 62 critic loss 0.82 actor loss -0.18 value loss 123.08 mdist 110.1 srate 0.167 exp_score 0.91 gen_score 0.03 time 76.69092202186584
+gail-feature16-nopenalty episode 63 critic loss 1.15 actor loss -0.15 value loss 189.90 mdist 73.7 srate 0.033 exp_score 0.93 gen_score 0.08 time 66.73028993606567
+gail-feature16-nopenalty episode 64 critic loss 0.78 actor loss -0.10 value loss 123.22 mdist 82.9 srate 0.100 exp_score 0.92 gen_score 0.04 time 72.4473192691803
+gail-feature16-nopenalty episode 65 critic loss 0.75 actor loss -0.13 value loss 146.31 mdist 85.6 srate 0.050 exp_score 0.94 gen_score 0.05 time 85.62413668632507
+gail-feature16-nopenalty episode 66 critic loss 1.20 actor loss -0.21 value loss 92.79 mdist 69.4 srate 0.033 exp_score 0.94 gen_score 0.10 time 64.78445935249329
+gail-feature16-nopenalty episode 67 critic loss 0.94 actor loss -0.18 value loss 82.20 mdist 77.6 srate 0.033 exp_score 0.93 gen_score 0.05 time 61.95348262786865
+gail-feature16-nopenalty episode 68 critic loss 0.78 actor loss -0.20 value loss 100.04 mdist 62.2 srate 0.000 exp_score 0.93 gen_score 0.04 time 60.48301100730896
+gail-feature16-nopenalty episode 69 critic loss 0.89 actor loss -0.08 value loss 145.91 mdist 105.1 srate 0.150 exp_score 0.95 gen_score 0.06 time 77.85779428482056
+gail-feature16-nopenalty episode 70 critic loss 1.66 actor loss -0.13 value loss 173.40 mdist 74.2 srate 0.033 exp_score 0.93 gen_score 0.12 time 64.41269850730896
+gail-feature16-nopenalty episode 71 critic loss 1.49 actor loss -0.19 value loss 203.31 mdist 97.2 srate 0.100 exp_score 0.91 gen_score 0.07 time 64.73110914230347
+gail-feature16-nopenalty episode 72 critic loss 0.96 actor loss -0.20 value loss 196.52 mdist 81.9 srate 0.075 exp_score 0.91 gen_score 0.04 time 73.02440571784973
+gail-feature16-nopenalty episode 73 critic loss 0.80 actor loss -0.10 value loss 130.03 mdist 89.3 srate 0.133 exp_score 0.95 gen_score 0.06 time 71.67593216896057
+gail-feature16-nopenalty episode 74 critic loss 0.80 actor loss -0.27 value loss 110.75 mdist 81.2 srate 0.050 exp_score 0.96 gen_score 0.08 time 69.56556701660156
+gail-feature16-nopenalty episode 75 critic loss 1.60 actor loss 0.66 value loss 193.42 mdist 69.9 srate 0.017 exp_score 0.94 gen_score 0.08 time 77.20600056648254
+gail-feature16-nopenalty episode 76 critic loss 0.98 actor loss -0.22 value loss 196.22 mdist 79.3 srate 0.049 exp_score 0.90 gen_score 0.04 time 77.17028069496155
+gail-feature16-nopenalty episode 77 critic loss 1.10 actor loss -0.17 value loss 199.44 mdist 118.7 srate 0.025 exp_score 0.90 gen_score 0.04 time 53.50817084312439
+gail-feature16-nopenalty episode 78 critic loss 0.72 actor loss 0.15 value loss 138.57 mdist 81.8 srate 0.100 exp_score 0.94 gen_score 0.05 time 77.42015743255615
+gail-feature16-nopenalty episode 79 critic loss 1.01 actor loss -0.28 value loss 151.66 mdist 77.8 srate 0.067 exp_score 0.96 gen_score 0.09 time 64.42765235900879
+gail-feature16-nopenalty episode 80 critic loss 0.77 actor loss -0.20 value loss 175.75 mdist 82.8 srate 0.050 exp_score 0.95 gen_score 0.04 time 69.2259373664856
+gail-feature16-nopenalty episode 81 critic loss 0.66 actor loss -0.26 value loss 137.09 mdist 72.0 srate 0.017 exp_score 0.94 gen_score 0.04 time 71.68869066238403
+gail-feature16-nopenalty episode 82 critic loss 0.98 actor loss -0.16 value loss 122.66 mdist 69.8 srate 0.017 exp_score 0.93 gen_score 0.06 time 59.52286767959595
+gail-feature16-nopenalty episode 83 critic loss 0.71 actor loss -0.17 value loss 129.36 mdist 79.2 srate 0.033 exp_score 0.95 gen_score 0.04 time 77.9520628452301
+gail-feature16-nopenalty episode 84 critic loss 0.85 actor loss -0.22 value loss 115.72 mdist 56.3 srate 0.000 exp_score 0.95 gen_score 0.06 time 66.58611631393433
+gail-feature16-nopenalty episode 85 critic loss 0.93 actor loss -0.23 value loss 172.45 mdist 71.4 srate 0.000 exp_score 0.94 gen_score 0.07 time 75.40461373329163
+gail-feature16-nopenalty episode 86 critic loss 0.84 actor loss -0.18 value loss 135.89 mdist 65.7 srate 0.017 exp_score 0.94 gen_score 0.06 time 62.34521532058716
+gail-feature16-nopenalty episode 87 critic loss 1.05 actor loss -0.19 value loss 167.92 mdist 93.8 srate 0.000 exp_score 0.93 gen_score 0.07 time 51.07463550567627
+gail-feature16-nopenalty episode 88 critic loss 0.80 actor loss 0.06 value loss 132.51 mdist 40.9 srate 0.000 exp_score 0.94 gen_score 0.03 time 67.96680283546448
+gail-feature16-nopenalty episode 89 critic loss 0.94 actor loss -0.16 value loss 131.37 mdist 62.3 srate 0.000 exp_score 0.95 gen_score 0.06 time 63.567028522491455
+gail-feature16-nopenalty episode 90 critic loss 0.92 actor loss -0.14 value loss 179.73 mdist 71.4 srate 0.000 exp_score 0.94 gen_score 0.07 time 64.97353792190552
+gail-feature16-nopenalty episode 91 critic loss 1.10 actor loss 0.19 value loss 168.13 mdist 72.9 srate 0.000 exp_score 0.93 gen_score 0.07 time 61.536784648895264
+gail-feature16-nopenalty episode 92 critic loss 0.74 actor loss 0.97 value loss 197.56 mdist 56.1 srate 0.000 exp_score 0.92 gen_score 0.03 time 159.86387085914612
+gail-feature16-nopenalty episode 93 critic loss 0.93 actor loss -0.18 value loss 101.73 mdist 54.2 srate 0.000 exp_score 0.94 gen_score 0.06 time 61.85686802864075
+gail-feature16-nopenalty episode 94 critic loss 0.85 actor loss -0.17 value loss 121.92 mdist 41.2 srate 0.000 exp_score 0.95 gen_score 0.05 time 54.22066593170166
+gail-feature16-nopenalty episode 95 critic loss 0.80 actor loss -0.18 value loss 110.69 mdist 63.0 srate 0.017 exp_score 0.96 gen_score 0.06 time 63.84540581703186
+gail-feature16-nopenalty episode 96 critic loss 0.75 actor loss -0.25 value loss 137.97 mdist 50.2 srate 0.000 exp_score 0.96 gen_score 0.05 time 55.572341442108154
+gail-feature16-nopenalty episode 97 critic loss 0.62 actor loss 0.19 value loss 133.38 mdist 39.9 srate 0.000 exp_score 0.95 gen_score 0.02 time 60.39960193634033
+gail-feature16-nopenalty episode 98 critic loss 0.60 actor loss -0.26 value loss 128.60 mdist 51.5 srate 0.000 exp_score 0.95 gen_score 0.03 time 70.13547396659851
+gail-feature16-nopenalty episode 99 critic loss 0.98 actor loss -0.19 value loss 174.38 mdist 43.6 srate 0.000 exp_score 0.94 gen_score 0.06 time 70.55374765396118
+gail-feature16-nopenalty episode 100 critic loss 1.00 actor loss -0.19 value loss 135.62 mdist 47.4 srate 0.000 exp_score 0.92 gen_score 0.05 time 54.37935185432434
+gail-feature16-nopenalty episode 101 critic loss 0.81 actor loss -0.18 value loss 114.14 mdist 51.3 srate 0.000 exp_score 0.95 gen_score 0.04 time 59.26772975921631
+gail-feature16-nopenalty episode 102 critic loss 1.15 actor loss -0.17 value loss 107.13 mdist 34.3 srate 0.000 exp_score 0.95 gen_score 0.06 time 77.14258408546448
+gail-feature16-nopenalty episode 103 critic loss 0.51 actor loss 0.90 value loss 106.77 mdist 33.5 srate 0.000 exp_score 0.96 gen_score 0.03 time 73.18794584274292
+gail-feature16-nopenalty episode 104 critic loss 0.93 actor loss -0.12 value loss 167.26 mdist 48.9 srate 0.000 exp_score 0.95 gen_score 0.07 time 60.06750154495239
+gail-feature16-nopenalty episode 105 critic loss 0.97 actor loss 0.13 value loss 174.91 mdist 37.7 srate 0.000 exp_score 0.92 gen_score 0.05 time 67.04152584075928
+gail-feature16-nopenalty episode 106 critic loss 0.86 actor loss -0.13 value loss 194.96 mdist 46.9 srate 0.000 exp_score 0.93 gen_score 0.04 time 55.32593631744385
+gail-feature16-nopenalty episode 107 critic loss 0.67 actor loss -0.16 value loss 117.40 mdist 40.3 srate 0.000 exp_score 0.96 gen_score 0.05 time 71.73372793197632
+gail-feature16-nopenalty episode 108 critic loss 0.75 actor loss -0.17 value loss 110.75 mdist 45.4 srate 0.000 exp_score 0.97 gen_score 0.06 time 66.72136926651001
+gail-feature16-nopenalty episode 109 critic loss 0.82 actor loss -0.12 value loss 116.95 mdist 31.6 srate 0.000 exp_score 0.96 gen_score 0.05 time 70.65727806091309
+gail-feature16-nopenalty episode 110 critic loss 0.57 actor loss 0.02 value loss 142.98 mdist 41.9 srate 0.000 exp_score 0.95 gen_score 0.03 time 63.024773836135864
+gail-feature16-nopenalty episode 111 critic loss 0.50 actor loss -0.05 value loss 115.52 mdist 37.2 srate 0.000 exp_score 0.96 gen_score 0.03 time 60.26011395454407
+gail-feature16-nopenalty episode 112 critic loss 0.78 actor loss -0.19 value loss 109.77 mdist 41.3 srate 0.000 exp_score 0.97 gen_score 0.06 time 56.80577898025513
+gail-feature16-nopenalty episode 113 critic loss 0.36 actor loss -0.18 value loss 81.02 mdist 56.2 srate 0.033 exp_score 0.96 gen_score 0.01 time 58.50455403327942
+gail-feature16-nopenalty episode 114 critic loss 0.57 actor loss -0.20 value loss 140.17 mdist 41.3 srate 0.000 exp_score 0.96 gen_score 0.04 time 74.10596179962158
+gail-feature16-nopenalty episode 115 critic loss 0.56 actor loss -0.22 value loss 202.65 mdist 60.8 srate 0.000 exp_score 0.96 gen_score 0.04 time 73.59526944160461
+gail-feature16-nopenalty episode 116 critic loss 0.57 actor loss -0.22 value loss 148.21 mdist 40.2 srate 0.000 exp_score 0.96 gen_score 0.03 time 66.26104974746704
+gail-feature16-nopenalty episode 117 critic loss 0.63 actor loss -0.29 value loss 172.07 mdist 53.0 srate 0.013 exp_score 0.96 gen_score 0.03 time 70.07310175895691
+gail-feature16-nopenalty episode 118 critic loss 0.57 actor loss -0.18 value loss 132.10 mdist 50.0 srate 0.000 exp_score 0.96 gen_score 0.04 time 54.981003284454346
+gail-feature16-nopenalty episode 119 critic loss 0.65 actor loss -0.18 value loss 188.22 mdist 41.5 srate 0.000 exp_score 0.96 gen_score 0.04 time 65.67912721633911
+gail-feature16-nopenalty episode 120 critic loss 0.84 actor loss -0.17 value loss 194.34 mdist 49.1 srate 0.000 exp_score 0.95 gen_score 0.05 time 56.42385506629944
+gail-feature16-nopenalty episode 121 critic loss 0.41 actor loss -0.20 value loss 57.01 mdist 41.3 srate 0.000 exp_score 0.96 gen_score 0.01 time 59.803205728530884
+gail-feature16-nopenalty episode 122 critic loss 0.42 actor loss -0.07 value loss 89.45 mdist 40.6 srate 0.000 exp_score 0.97 gen_score 0.03 time 57.39757990837097
+gail-feature16-nopenalty episode 123 critic loss 1.67 actor loss -0.15 value loss 215.63 mdist 54.8 srate 0.000 exp_score 0.96 gen_score 0.08 time 55.90771222114563
+gail-feature16-nopenalty episode 124 critic loss 0.94 actor loss -0.21 value loss 207.59 mdist 46.7 srate 0.000 exp_score 0.92 gen_score 0.04 time 55.30346870422363
+gail-feature16-nopenalty episode 125 critic loss 0.79 actor loss -0.15 value loss 127.20 mdist 40.7 srate 0.000 exp_score 0.94 gen_score 0.03 time 58.06953692436218
+gail-feature16-nopenalty episode 126 critic loss 0.64 actor loss -0.13 value loss 246.45 mdist 52.2 srate 0.000 exp_score 0.96 gen_score 0.04 time 58.047078371047974
+gail-feature16-nopenalty episode 127 critic loss 0.55 actor loss -0.06 value loss 94.17 mdist 36.8 srate 0.000 exp_score 0.97 gen_score 0.04 time 63.92647433280945
+gail-feature16-nopenalty episode 128 critic loss 0.67 actor loss -0.23 value loss 262.45 mdist 40.0 srate 0.000 exp_score 0.97 gen_score 0.05 time 70.87469673156738
+gail-feature16-nopenalty episode 129 critic loss 0.98 actor loss -0.18 value loss 350.40 mdist 53.7 srate 0.000 exp_score 0.95 gen_score 0.05 time 53.00882434844971
+gail-feature16-nopenalty episode 130 critic loss 0.64 actor loss -0.05 value loss 215.40 mdist 54.3 srate 0.000 exp_score 0.94 gen_score 0.02 time 54.63546442985535
+gail-feature16-nopenalty episode 131 critic loss 0.63 actor loss -0.17 value loss 143.49 mdist 55.4 srate 0.000 exp_score 0.96 gen_score 0.03 time 58.452463150024414
+gail-feature16-nopenalty episode 132 critic loss 0.78 actor loss -0.15 value loss 149.44 mdist 52.2 srate 0.000 exp_score 0.97 gen_score 0.05 time 57.54036283493042
+gail-feature16-nopenalty episode 133 critic loss 0.61 actor loss -0.13 value loss 159.95 mdist 47.5 srate 0.000 exp_score 0.97 gen_score 0.04 time 57.01547145843506
+gail-feature16-nopenalty episode 134 critic loss 0.58 actor loss 0.16 value loss 136.24 mdist 40.5 srate 0.000 exp_score 0.97 gen_score 0.04 time 68.79009127616882
+gail-feature16-nopenalty episode 135 critic loss 0.64 actor loss -0.13 value loss 107.49 mdist 43.5 srate 0.000 exp_score 0.96 gen_score 0.04 time 69.2269504070282
+gail-feature16-nopenalty episode 136 critic loss 0.66 actor loss -0.20 value loss 194.00 mdist 70.8 srate 0.000 exp_score 0.96 gen_score 0.03 time 52.5293345451355
+gail-feature16-nopenalty episode 137 critic loss 0.85 actor loss 0.17 value loss 151.46 mdist 56.2 srate 0.000 exp_score 0.96 gen_score 0.06 time 60.75363540649414
+gail-feature16-nopenalty episode 138 critic loss 0.52 actor loss -0.19 value loss 132.39 mdist 54.9 srate 0.000 exp_score 0.96 gen_score 0.02 time 66.40232515335083
+gail-feature16-nopenalty episode 139 critic loss 0.37 actor loss -0.18 value loss 53.40 mdist 55.6 srate 0.000 exp_score 0.97 gen_score 0.02 time 53.58477282524109
+gail-feature16-nopenalty episode 140 critic loss 0.45 actor loss 0.33 value loss 97.67 mdist 43.6 srate 0.000 exp_score 0.98 gen_score 0.03 time 75.35044836997986
+gail-feature16-nopenalty episode 141 critic loss 0.48 actor loss -0.25 value loss 100.83 mdist 62.6 srate 0.000 exp_score 0.97 gen_score 0.04 time 62.866660356521606
+gail-feature16-nopenalty episode 142 critic loss 0.47 actor loss -0.18 value loss 141.78 mdist 45.3 srate 0.000 exp_score 0.97 gen_score 0.03 time 59.106388092041016
+gail-feature16-nopenalty episode 143 critic loss 0.29 actor loss -0.23 value loss 110.82 mdist 49.4 srate 0.000 exp_score 0.97 gen_score 0.01 time 55.01011037826538
+gail-feature16-nopenalty episode 144 critic loss 0.42 actor loss 0.02 value loss 181.95 mdist 38.8 srate 0.000 exp_score 0.97 gen_score 0.03 time 73.01752543449402
+gail-feature16-nopenalty episode 145 critic loss 0.48 actor loss -0.22 value loss 158.82 mdist 56.4 srate 0.030 exp_score 0.98 gen_score 0.03 time 60.649770975112915
+gail-feature16-nopenalty episode 146 critic loss 0.50 actor loss -0.22 value loss 175.40 mdist 46.2 srate 0.000 exp_score 0.97 gen_score 0.04 time 67.57492899894714
+gail-feature16-nopenalty episode 147 critic loss 0.40 actor loss -0.05 value loss 118.55 mdist 42.7 srate 0.000 exp_score 0.96 gen_score 0.02 time 57.166924476623535
+gail-feature16-nopenalty episode 148 critic loss 0.42 actor loss -0.19 value loss 258.60 mdist 48.2 srate 0.013 exp_score 0.97 gen_score 0.03 time 62.54270601272583
+gail-feature16-nopenalty episode 149 critic loss 0.78 actor loss 0.33 value loss 359.62 mdist 45.4 srate 0.000 exp_score 0.97 gen_score 0.05 time 76.15291500091553
+gail-feature16-nopenalty episode 150 critic loss 0.55 actor loss -0.13 value loss 113.13 mdist 53.9 srate 0.000 exp_score 0.95 gen_score 0.03 time 60.090567111968994
+gail-feature16-nopenalty episode 151 critic loss 0.39 actor loss -0.15 value loss 82.71 mdist 39.1 srate 0.000 exp_score 0.96 gen_score 0.01 time 64.02906394004822
+gail-feature16-nopenalty episode 152 critic loss 0.44 actor loss 0.18 value loss 97.29 mdist 59.6 srate 0.000 exp_score 0.97 gen_score 0.03 time 64.72150230407715
+gail-feature16-nopenalty episode 153 critic loss 0.46 actor loss 0.35 value loss 127.66 mdist 47.3 srate 0.000 exp_score 0.98 gen_score 0.02 time 58.14737868309021
+gail-feature16-nopenalty episode 154 critic loss 0.80 actor loss -0.13 value loss 315.05 mdist 43.3 srate 0.000 exp_score 0.97 gen_score 0.06 time 79.21145367622375
+gail-feature16-nopenalty episode 155 critic loss 0.45 actor loss -0.03 value loss 129.54 mdist 48.2 srate 0.000 exp_score 0.96 gen_score 0.01 time 58.955774545669556
+gail-feature16-nopenalty episode 156 critic loss 0.54 actor loss -0.01 value loss 173.54 mdist 67.5 srate 0.000 exp_score 0.96 gen_score 0.03 time 69.3860924243927
+gail-feature16-nopenalty episode 157 critic loss 0.88 actor loss -0.12 value loss 374.43 mdist 69.9 srate 0.000 exp_score 0.97 gen_score 0.05 time 53.90671348571777
+gail-feature16-nopenalty episode 158 critic loss 0.40 actor loss -0.19 value loss 121.21 mdist 54.0 srate 0.000 exp_score 0.97 gen_score 0.02 time 55.119038820266724
+gail-feature16-nopenalty episode 159 critic loss 0.36 actor loss -0.13 value loss 103.68 mdist 70.5 srate 0.016 exp_score 0.97 gen_score 0.02 time 61.31025242805481
+gail-feature16-nopenalty episode 160 critic loss 0.42 actor loss -0.18 value loss 155.36 mdist 39.2 srate 0.000 exp_score 0.98 gen_score 0.03 time 77.62817239761353
+gail-feature16-nopenalty episode 161 critic loss 0.32 actor loss -0.17 value loss 174.56 mdist 45.7 srate 0.000 exp_score 0.98 gen_score 0.02 time 57.802937269210815
+gail-feature16-nopenalty episode 162 critic loss 0.26 actor loss -0.21 value loss 131.57 mdist 61.3 srate 0.000 exp_score 0.98 gen_score 0.01 time 53.861796855926514
+gail-feature16-nopenalty episode 163 critic loss 0.32 actor loss 0.22 value loss 168.15 mdist 36.9 srate 0.000 exp_score 0.98 gen_score 0.03 time 71.81593990325928
+gail-feature16-nopenalty episode 164 critic loss 0.33 actor loss -0.04 value loss 131.25 mdist 50.6 srate 0.000 exp_score 0.98 gen_score 0.02 time 57.50454759597778
+gail-feature16-nopenalty episode 165 critic loss 0.41 actor loss -0.07 value loss 147.69 mdist 32.1 srate 0.000 exp_score 0.97 gen_score 0.02 time 59.277111530303955
+gail-feature16-nopenalty episode 166 critic loss 0.44 actor loss -0.05 value loss 385.59 mdist 61.8 srate 0.000 exp_score 0.98 gen_score 0.03 time 64.24257802963257
+gail-feature16-nopenalty episode 167 critic loss 0.27 actor loss -0.17 value loss 78.76 mdist 56.2 srate 0.000 exp_score 0.98 gen_score 0.01 time 81.97241997718811
+gail-feature16-nopenalty episode 168 critic loss 0.32 actor loss -0.18 value loss 119.24 mdist 68.4 srate 0.015 exp_score 0.98 gen_score 0.02 time 72.41665458679199
+gail-feature16-nopenalty episode 169 critic loss 0.47 actor loss 1.89 value loss 237.05 mdist 56.2 srate 0.000 exp_score 0.97 gen_score 0.03 time 71.29564356803894
+gail-feature16-nopenalty episode 170 critic loss 0.52 actor loss -0.14 value loss 157.67 mdist 58.3 srate 0.000 exp_score 0.96 gen_score 0.03 time 61.384952783584595
+gail-feature16-nopenalty episode 171 critic loss 0.35 actor loss 0.16 value loss 142.63 mdist 44.9 srate 0.000 exp_score 0.97 gen_score 0.01 time 86.21781969070435
+gail-feature16-nopenalty episode 172 critic loss 0.43 actor loss -0.14 value loss 157.80 mdist 53.3 srate 0.000 exp_score 0.98 gen_score 0.03 time 62.42276215553284
+gail-feature16-nopenalty episode 173 critic loss 0.53 actor loss -0.06 value loss 224.70 mdist 44.7 srate 0.000 exp_score 0.98 gen_score 0.04 time 81.35963535308838
+gail-feature16-nopenalty episode 174 critic loss 0.60 actor loss 0.10 value loss 259.80 mdist 57.5 srate 0.000 exp_score 0.97 gen_score 0.03 time 65.06388735771179
+gail-feature16-nopenalty episode 175 critic loss 0.34 actor loss 0.88 value loss 140.52 mdist 54.8 srate 0.000 exp_score 0.96 gen_score 0.01 time 79.43971705436707
+gail-feature16-nopenalty episode 176 critic loss 0.46 actor loss 0.01 value loss 222.34 mdist 52.2 srate 0.000 exp_score 0.97 gen_score 0.02 time 86.46107196807861
+gail-feature16-nopenalty episode 177 critic loss 0.45 actor loss 0.01 value loss 117.61 mdist 51.5 srate 0.000 exp_score 0.98 gen_score 0.05 time 55.61256265640259
+gail-feature16-nopenalty episode 178 critic loss 0.55 actor loss -0.20 value loss 122.72 mdist 51.5 srate 0.000 exp_score 0.97 gen_score 0.03 time 54.154592990875244
+gail-feature16-nopenalty episode 179 critic loss 0.22 actor loss -0.11 value loss 65.03 mdist 55.9 srate 0.000 exp_score 0.98 gen_score 0.01 time 53.506361961364746
+gail-feature16-nopenalty episode 180 critic loss 0.28 actor loss -0.17 value loss 77.19 mdist 57.8 srate 0.000 exp_score 0.99 gen_score 0.02 time 59.86500644683838
+gail-feature16-nopenalty episode 181 critic loss 0.34 actor loss -0.16 value loss 153.47 mdist 45.8 srate 0.016 exp_score 0.98 gen_score 0.03 time 56.930800437927246
+gail-feature16-nopenalty episode 182 critic loss 0.16 actor loss 0.07 value loss 48.14 mdist 61.3 srate 0.000 exp_score 0.99 gen_score 0.01 time 64.49899125099182
+gail-feature16-nopenalty episode 183 critic loss 0.70 actor loss -0.07 value loss 194.48 mdist 47.6 srate 0.000 exp_score 0.98 gen_score 0.03 time 71.53230023384094
+gail-feature16-nopenalty episode 184 critic loss 0.32 actor loss -0.12 value loss 145.91 mdist 52.6 srate 0.000 exp_score 0.97 gen_score 0.01 time 79.57866311073303
+gail-feature16-nopenalty episode 185 critic loss 0.23 actor loss -0.05 value loss 61.91 mdist 51.0 srate 0.017 exp_score 0.98 gen_score 0.01 time 69.68089890480042
+gail-feature16-nopenalty episode 186 critic loss 0.46 actor loss -0.18 value loss 110.45 mdist 53.2 srate 0.013 exp_score 0.98 gen_score 0.02 time 75.13269209861755
+gail-feature16-nopenalty episode 187 critic loss 0.38 actor loss 0.76 value loss 150.01 mdist 38.9 srate 0.000 exp_score 0.97 gen_score 0.01 time 68.392324924469
+gail-feature16-nopenalty episode 188 critic loss 0.62 actor loss -0.02 value loss 233.67 mdist 51.8 srate 0.000 exp_score 0.97 gen_score 0.02 time 63.434808015823364
+gail-feature16-nopenalty episode 189 critic loss 0.36 actor loss -0.14 value loss 103.23 mdist 51.9 srate 0.000 exp_score 0.98 gen_score 0.02 time 67.51046943664551
+gail-feature16-nopenalty episode 190 critic loss 0.26 actor loss -0.13 value loss 104.29 mdist 59.3 srate 0.000 exp_score 0.98 gen_score 0.01 time 67.77702856063843
+gail-feature16-nopenalty episode 191 critic loss 0.61 actor loss -0.11 value loss 263.12 mdist 46.0 srate 0.000 exp_score 0.98 gen_score 0.04 time 59.34048867225647
+gail-feature16-nopenalty episode 192 critic loss 0.34 actor loss -0.10 value loss 184.66 mdist 42.4 srate 0.000 exp_score 0.98 gen_score 0.02 time 72.45310616493225
+gail-feature16-nopenalty episode 193 critic loss 0.35 actor loss 0.81 value loss 197.29 mdist 52.9 srate 0.000 exp_score 0.97 gen_score 0.01 time 68.67739605903625
+gail-feature16-nopenalty episode 194 critic loss 0.29 actor loss 0.04 value loss 157.33 mdist 40.8 srate 0.013 exp_score 0.97 gen_score 0.01 time 65.31901931762695
+gail-feature16-nopenalty episode 195 critic loss 0.24 actor loss -0.14 value loss 99.47 mdist 68.1 srate 0.000 exp_score 0.99 gen_score 0.02 time 63.88079833984375
+gail-feature16-nopenalty episode 196 critic loss 0.17 actor loss -0.06 value loss 47.21 mdist 47.3 srate 0.000 exp_score 0.99 gen_score 0.01 time 55.087223052978516
+gail-feature16-nopenalty episode 197 critic loss 0.60 actor loss -0.00 value loss 102.83 mdist 52.2 srate 0.017 exp_score 0.98 gen_score 0.04 time 63.76432538032532
+gail-feature16-nopenalty episode 198 critic loss 0.37 actor loss -0.14 value loss 59.74 mdist 54.9 srate 0.000 exp_score 0.96 gen_score 0.01 time 74.74110984802246
+gail-feature16-nopenalty episode 199 critic loss 0.33 actor loss 0.78 value loss 81.13 mdist 47.9 srate 0.014 exp_score 0.97 gen_score 0.01 time 65.7633764743805
+gail-feature16-nopenalty episode 200 critic loss 0.58 actor loss -0.14 value loss 186.61 mdist 50.6 srate 0.013 exp_score 0.98 gen_score 0.03 time 74.11249685287476
+gail-feature16-nopenalty episode 201 critic loss 0.38 actor loss 0.20 value loss 145.32 mdist 60.7 srate 0.017 exp_score 0.98 gen_score 0.03 time 72.11238598823547
+gail-feature16-nopenalty episode 202 critic loss 0.54 actor loss -0.08 value loss 131.36 mdist 57.3 srate 0.000 exp_score 0.97 gen_score 0.04 time 64.13783407211304
+gail-feature16-nopenalty episode 203 critic loss 0.26 actor loss 0.24 value loss 59.43 mdist 52.4 srate 0.016 exp_score 0.98 gen_score 0.01 time 61.74307298660278
+gail-feature16-nopenalty episode 204 critic loss 0.29 actor loss 0.79 value loss 85.27 mdist 55.4 srate 0.000 exp_score 0.98 gen_score 0.01 time 69.58804821968079
+gail-feature16-nopenalty episode 205 critic loss 0.28 actor loss 0.00 value loss 63.57 mdist 76.1 srate 0.000 exp_score 0.98 gen_score 0.02 time 69.66426706314087
+gail-feature16-nopenalty episode 206 critic loss 0.41 actor loss -0.16 value loss 318.63 mdist 78.2 srate 0.017 exp_score 0.99 gen_score 0.03 time 66.24425649642944
+gail-feature16-nopenalty episode 207 critic loss 0.87 actor loss -0.15 value loss 255.82 mdist 62.0 srate 0.000 exp_score 0.98 gen_score 0.04 time 63.237547636032104
+gail-feature16-nopenalty episode 208 critic loss 0.31 actor loss 0.08 value loss 124.00 mdist 45.7 srate 0.033 exp_score 0.98 gen_score 0.01 time 63.12889003753662
+gail-feature16-nopenalty episode 209 critic loss 0.48 actor loss -0.07 value loss 205.26 mdist 52.1 srate 0.033 exp_score 0.97 gen_score 0.03 time 68.44598293304443
+gail-feature16-nopenalty episode 210 critic loss 0.39 actor loss -0.15 value loss 144.42 mdist 50.4 srate 0.000 exp_score 0.98 gen_score 0.03 time 59.022077322006226
+gail-feature16-nopenalty episode 211 critic loss 0.24 actor loss -0.17 value loss 86.69 mdist 51.8 srate 0.000 exp_score 0.98 gen_score 0.01 time 61.60050916671753
+gail-feature16-nopenalty episode 212 critic loss 0.41 actor loss -0.12 value loss 143.13 mdist 57.8 srate 0.000 exp_score 0.98 gen_score 0.02 time 55.41449499130249
+gail-feature16-nopenalty episode 213 critic loss 0.85 actor loss -0.15 value loss 206.21 mdist 62.5 srate 0.000 exp_score 0.97 gen_score 0.05 time 64.0578305721283
+gail-feature16-nopenalty episode 214 critic loss 0.49 actor loss -0.14 value loss 221.74 mdist 58.1 srate 0.027 exp_score 0.97 gen_score 0.02 time 75.59449625015259
+gail-feature16-nopenalty episode 215 critic loss 0.44 actor loss 0.31 value loss 239.30 mdist 68.2 srate 0.000 exp_score 0.96 gen_score 0.01 time 69.79064297676086
+gail-feature16-nopenalty episode 216 critic loss 0.33 actor loss 0.20 value loss 157.56 mdist 48.8 srate 0.000 exp_score 0.98 gen_score 0.02 time 81.30778193473816
+gail-feature16-nopenalty episode 217 critic loss 0.29 actor loss -0.18 value loss 89.68 mdist 67.4 srate 0.000 exp_score 0.99 gen_score 0.02 time 70.76961398124695
+gail-feature16-nopenalty episode 218 critic loss 0.18 actor loss 0.28 value loss 80.25 mdist 51.7 srate 0.014 exp_score 0.99 gen_score 0.01 time 78.01392865180969
+gail-feature16-nopenalty episode 219 critic loss 0.45 actor loss -0.13 value loss 198.25 mdist 56.6 srate 0.014 exp_score 0.98 gen_score 0.03 time 67.83729553222656
+gail-feature16-nopenalty episode 220 critic loss 0.19 actor loss -0.09 value loss 117.30 mdist 55.2 srate 0.000 exp_score 0.98 gen_score 0.00 time 69.8623833656311
+gail-feature16-nopenalty episode 221 critic loss 0.18 actor loss -0.08 value loss 39.40 mdist 52.0 srate 0.000 exp_score 0.98 gen_score 0.01 time 63.31549119949341
+gail-feature16-nopenalty episode 222 critic loss 0.25 actor loss -0.14 value loss 94.24 mdist 53.8 srate 0.000 exp_score 0.99 gen_score 0.02 time 60.58489680290222
+gail-feature16-nopenalty episode 223 critic loss 0.21 actor loss -0.14 value loss 114.09 mdist 64.4 srate 0.000 exp_score 0.98 gen_score 0.01 time 54.25766062736511
+gail-feature16-nopenalty episode 224 critic loss 0.45 actor loss -0.03 value loss 108.21 mdist 49.3 srate 0.000 exp_score 0.98 gen_score 0.03 time 61.81691861152649
+gail-feature16-nopenalty episode 225 critic loss 0.32 actor loss -0.04 value loss 81.06 mdist 48.4 srate 0.000 exp_score 0.96 gen_score 0.01 time 65.27772736549377
+gail-feature16-nopenalty episode 226 critic loss 0.24 actor loss 0.05 value loss 71.62 mdist 49.9 srate 0.000 exp_score 0.98 gen_score 0.01 time 70.75875473022461
+gail-feature16-nopenalty episode 227 critic loss 0.73 actor loss -0.13 value loss 391.09 mdist 36.7 srate 0.000 exp_score 0.98 gen_score 0.05 time 71.55148124694824
+gail-feature16-nopenalty episode 228 critic loss 0.44 actor loss -0.12 value loss 269.02 mdist 57.3 srate 0.000 exp_score 0.97 gen_score 0.03 time 54.44383382797241
+gail-feature16-nopenalty episode 229 critic loss 0.42 actor loss -0.05 value loss 280.35 mdist 72.9 srate 0.017 exp_score 0.97 gen_score 0.02 time 74.18467164039612
+gail-feature16-nopenalty episode 230 critic loss 0.40 actor loss 0.01 value loss 122.73 mdist 60.1 srate 0.000 exp_score 0.97 gen_score 0.03 time 67.28307461738586
+gail-feature16-nopenalty episode 231 critic loss 0.17 actor loss -0.07 value loss 81.91 mdist 52.0 srate 0.000 exp_score 0.98 gen_score 0.01 time 60.141867876052856
+gail-feature16-nopenalty episode 232 critic loss 0.26 actor loss -0.13 value loss 126.59 mdist 65.0 srate 0.033 exp_score 0.99 gen_score 0.02 time 65.88405752182007
+gail-feature16-nopenalty episode 233 critic loss 0.38 actor loss 0.05 value loss 177.40 mdist 45.9 srate 0.016 exp_score 0.98 gen_score 0.01 time 63.073965072631836
+gail-feature16-nopenalty episode 234 critic loss 0.52 actor loss -0.08 value loss 157.17 mdist 68.0 srate 0.000 exp_score 0.97 gen_score 0.03 time 64.95243000984192
+gail-feature16-nopenalty episode 235 critic loss 0.61 actor loss -0.11 value loss 276.92 mdist 66.8 srate 0.000 exp_score 0.97 gen_score 0.03 time 59.344717025756836
+gail-feature16-nopenalty episode 236 critic loss 0.72 actor loss -0.16 value loss 285.11 mdist 74.1 srate 0.017 exp_score 0.97 gen_score 0.04 time 60.339924335479736
+gail-feature16-nopenalty episode 237 critic loss 0.27 actor loss -0.03 value loss 94.36 mdist 42.1 srate 0.000 exp_score 0.98 gen_score 0.01 time 61.04419827461243
+gail-feature16-nopenalty episode 238 critic loss 0.57 actor loss 0.04 value loss 255.69 mdist 53.5 srate 0.016 exp_score 0.99 gen_score 0.05 time 75.20663380622864
