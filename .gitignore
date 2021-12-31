@@ -25,3 +25,4 @@ modelexp38.pth
 modelexp50.pth
 modelexp64.pth
 modelexp78.pth
+*.pkl

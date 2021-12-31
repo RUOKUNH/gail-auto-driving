@@ -43,8 +43,8 @@ def evaluate(agent, feature, descriptor=None):
     eval_vehicle_groups = []
     for idx in range(len(eval_vehicle_ids) - agent_num):
         eval_vehicle_groups.append(eval_vehicle_ids[idx: idx + agent_num])
-    # env = MATrafficSim(['../scenarios/ngsim'], agent_num, envision=True)
-    env = FixedMATrafficSim(['../scenarios/ngsim'], agent_num, eval_vehicle_groups)
+    env = MATrafficSim(['../scenarios/ngsim'], agent_num, envision=True)
+    # env = FixedMATrafficSim(['../scenarios/ngsim'], agent_num, eval_vehicle_groups)
     x_distance_log = []
     success_log = []
     # vehicle_id = ['3197', '3205', '3228', '3246', '3238', '3242', '3252', '3260', '3244', '3265']    with open(os.path.join(BASE_DIR, "test_ids.pkl"), "rb") as f:
@@ -80,17 +80,17 @@ def evaluate(agent, feature, descriptor=None):
                 idx += 1
                 action[agent_id] = _action[idx].detach().numpy()
             next_state, r, done, _ = env.step(action)
-            # for agent_id in done.keys():
-            #     if done[agent_id]:
-            #         finish += 1
-            #         x_end = next_state[agent_id].ego_vehicle_state.position[0]
-            #         x_distance_log.append(x_end - x_start[agent_id])
-            #         _xdlog.append(x_end - x_start[agent_id])
-            #         if next_state[agent_id].events.reached_goal:
-            #             print(env.agentid_to_vehid[agent_id])
-            #             success_log.append(1)
-            #         else:
-            #             success_log.append(0)
+            for agent_id in done.keys():
+                if done[agent_id]:
+                    finish += 1
+                    x_end = next_state[agent_id].ego_vehicle_state.position[0]
+                    x_distance_log.append(x_end - x_start[agent_id])
+                    _xdlog.append(x_end - x_start[agent_id])
+                    if next_state[agent_id].events.reached_goal:
+                        print(env.agentid_to_vehid[agent_id])
+                        success_log.append(1)
+                    else:
+                        success_log.append(0)
             if descriptor:
                 _next_state = [descriptor(feature(expert_collector3(next_state[id]))) for id in state.keys()]
             else:
@@ -105,25 +105,27 @@ def evaluate(agent, feature, descriptor=None):
                     continue
                 state[agent_id] = next_state[agent_id]
 
-        # print(f"totmdist {np.mean(x_distance_log)} totsrate {np.mean(success_log)} "
-        #       f"mdist {np.mean(_xdlog)} mind {np.min(_xdlog)}"
-        #       f"{len(x_distance_log)} {len(success_log)}")
-        pdb.set_trace()
+        print(f"totmdist {np.mean(x_distance_log)} totsrate {np.mean(success_log)} "
+              f"mdist {np.mean(_xdlog)} mind {np.min(_xdlog)}"
+              f"{len(x_distance_log)} {len(success_log)}")
+        # pdb.set_trace()
 
 
 if __name__ == '__main__':
     expert_path = './expert_data_feature16.pkl'
-    # exp_path = 'bc-feature16'
-    exp_path = 'gail-feature16-criticp1.5'
-    state_dim = 65
+    state_dim = 62
     action_dim = 2
     feature = feature15
-    descriptor = feature15_descriptor
+    descriptor = feature15_descriptor2
     # descriptor = None
+    # exp_path = 'gail-feature16-criticp1.5'
+    exp_path = 'save_model'
     agent = GAIL_PPO(state_dim, action_dim, None, policy_net=[512, 256, 128, 64])
-    agent.load_model(f"{exp_path}/model/model_707.pth")
-    # agent.load_model(f"{exp_path}/model/model_213.pth")
+    agent.load_model(f"{exp_path}/model_136.pth")
+
+    # exp_path = 'bc-feature16'
     # pnet = PolicyNetwork(state_dim, 4, [256, 128, 64, 64, 32])
     # agent = BC(pnet)
     # agent.load_model(f"{exp_path}/model.pth")
+
     evaluate(agent, feature, descriptor)

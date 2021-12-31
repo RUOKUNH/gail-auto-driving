@@ -28,18 +28,22 @@ class GAIL_PPO:
             action_dim,
             args,
             policy_net=None,
+            alim=True
     ):
         if policy_net is None:
             policy_net = [512, 256, 128, 64]
+            # policy_net = [256, 128, 64, 32]
         self.train_param = {
             # basic info
             'policy_net': policy_net,
             # 'policy_net_drop_rate': [0.5, 0.5, 0.3, 0.3, 0.3],
             'policy_net_drop_rate': None,
             'value_net': [512, 256, 128, 64],
+            # 'value_net': [256, 128, 64, 32],
             # 'value_net_drop_rate': [0.5, 0.5, 0.3, 0.3, 0.3],
             'value_net_drop_rate': None,
             'critic_net': [512, 256, 128, 64],
+            # 'critic_net': [256, 128, 64, 32],
             # 'critic_net_drop_rate': [0.5, 0.5, 0.3, 0.3, 0.3],
             'critic_net_drop_rate': None,
             'state_dim': state_dim,
@@ -55,49 +59,42 @@ class GAIL_PPO:
             'beta': 1,
             'gamma': 0.99,
             'max_step': 1000,
-            'batch_size': 4096,
-            'critic_mini_batch': 4096,
-            'mini_batch': 1024,
-            'policy_mini_epoch': 5,
-            'critic_mini_epoch': 5,
+            'batch_size': 1024,
+            'critic_mini_batch': 1024,
+            'mini_batch': 256,
+            'policy_mini_epoch': 10,
+            'critic_mini_epoch': 10,
             'penalty': True,
             'line_search': False,
             'l2_norm': False,
             'l2_norm_weight': 0.01,
             'use_entropy':False,
 
-            'pre_train': False,
-            'pre_train_lr': [3e-5, 3e-5, 3e-5],
-            'pre_train_epoch': 0,
-
             'critic_penalty': True,
-            'penalty_weight': 1.5
+            'penalty_weight': 1.5,
+
+            'action_limit': alim,
         }
         self.state_dim = state_dim
         self.action_dim = action_dim
 
-        if self.train_param['pre_train']:
-            policy_lr, value_lr, critic_lr = self.train_param['pre_train_lr']
-        else:
-            policy_lr = self.train_param['policy_lr']
-            value_lr = self.train_param['value_lr']
-            critic_lr = self.train_param['critic_lr']
+        policy_lr = self.train_param['policy_lr']
+        value_lr = self.train_param['value_lr']
+        critic_lr = self.train_param['critic_lr']
 
         lr = [policy_lr, value_lr, critic_lr]
 
-        self.policy = PolicyNetwork(state_dim, action_dim*2, self.train_param['policy_net'], self.train_param['policy_net_drop_rate'])
-        self.value = ValueNetwork(state_dim, self.train_param['value_net'], self.train_param['value_net_drop_rate'])
-        self.target_value = ValueNetwork(state_dim, self.train_param['value_net'], self.train_param['value_net_drop_rate'])
-        self.critic = Discriminator(self.state_dim, self.action_dim, self.train_param['critic_net'], self.train_param['critic_net_drop_rate'])
+        self.policy = PolicyNetwork(state_dim, action_dim*2, self.train_param['policy_net'], self.train_param['action_limit'])
+        self.value = ValueNetwork(state_dim, self.train_param['value_net'])
+        self.target_value = ValueNetwork(state_dim, self.train_param['value_net'])
+        self.critic = Discriminator(self.state_dim, self.action_dim, self.train_param['critic_net'])
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=critic_lr)
-        # self.critic_lr_scheduler = torch.optim.lr_scheduler.StepLR(self.critic_optimizer,
-        # step_size=self.train_param['critic_lr_scheduler_step_size'], gamma=self.train_param['critic_lr_schedule_gamma'])
         self.ppo = PPO(self.train_param, lr,
                        self.policy, self.value, self.target_value, state_dim, action_dim, n_step=1)
 
         self.args = args
 
-        self.agent_num = 20
+        self.agent_num = 1
         self.env = env = MATrafficSim(['../scenarios/ngsim'], self.agent_num)
 
     def normalize(self, state):
@@ -187,128 +184,10 @@ class GAIL_PPO:
         batch["adv"] = adv
         return batch, x_distance_log, success_log
 
-    def collect2(self, batch_size, mini_batch, max_step, feature, descriptor):
-        states = []
-        next_states = []
-        acts = []
-        dones = []
-        log_probs = []
-        rewards = []
-        advs = []
-        discounted_reward = []
-        x_distance_log = []
-        success_log = []
-        self.critic.eval()
-        while len(states) < batch_size:
-            _batch = {agent_id: {} for agent_id in self.env.agent_ids}
-            for agent_id in _batch.keys():
-                _batch[agent_id] = {
-                    'state': [],
-                    'next_state': [],
-                    'acts': [],
-                    'done': [],
-                    'log_prob': []
-                }
-            state = self.env.reset()
-            x_start = {}
-            step = 0
-            finish = 0
-            while finish < self.agent_num and step < max_step:
-                if len(state) == 0:
-                    break
-                agent_id_to_idx = {list(state.keys())[idx]: idx for idx in range(len(state))}
-                step += 1
-
-                for agent_id in state.keys():
-                    if agent_id not in x_start.keys():
-                        x_start[agent_id] = state[agent_id].ego_vehicle_state.position[0]
-                if descriptor:
-                    _state = [descriptor(feature(expert_collector3(state[agent_id]))) for agent_id in state.keys()]
-                else:
-                    _state = [feature(expert_collector3(state[agent_id])) for agent_id in state.keys()]
-                for agent_id in state.keys():
-                    _batch[agent_id]['state'].append(_state[agent_id_to_idx[agent_id]].tolist())
-                _state = torch.tensor(_state).float()
-                _state = self.normalize(_state)
-                _action = self.ppo.action(_state)
-                _, log_prob = self.ppo.dist(_state, _action)
-
-                action = {}
-                for agent_id in state.keys():
-                    _batch[agent_id]['acts'].append(_action[agent_id_to_idx[agent_id]].detach().tolist())
-                    _batch[agent_id]['log_prob'].append(log_prob[agent_id_to_idx[agent_id]].detach().numpy())
-                    action[agent_id] = _action[agent_id_to_idx[agent_id]].detach().numpy()
-                next_state, r, done, _ = self.env.step(action)
-                if descriptor:
-                    _next_state = [descriptor(feature(expert_collector3(next_state[id]))) for id in state.keys()]
-                else:
-                    _next_state = [feature(expert_collector3(next_state[id])) for id in state.keys()]
-                for agent_id in state.keys():
-                    _batch[agent_id]['next_state'].append(_next_state[agent_id_to_idx[agent_id]])
-                _next_state = torch.tensor(_next_state).float()
-                _next_state = self.normalize(_next_state)
-
-                for agent_id in state.keys():
-                    _batch[agent_id]['done'].append(done[agent_id])
-                    if done[agent_id]:
-                        finish += 1
-                        x_end = next_state[agent_id].ego_vehicle_state.position[0]
-                        x_distance_log.append(x_end - x_start[agent_id])
-                        if next_state[agent_id].events.reached_goal:
-                            success_log.append(1)
-                        else:
-                            success_log.append(0)
-                        _agent_states = _batch[agent_id]['state']
-                        _agent_acts = _batch[agent_id]['acts']
-                        _rewards = -torch.log(
-                            1 - self.critic(torch.tensor(_agent_states), torch.tensor(_agent_acts))).reshape(
-                            -1).detach()
-                        _batch[agent_id]['reward'] = _rewards.tolist()
-                        _batch[agent_id]['discounted_reward'] = compute_discounted_rewards(_rewards, self.train_param['gamma'])
-                        _batch[agent_id]['adv'] = self.ppo.compute_adv(_batch[agent_id], 0.99)
-
-                state = {}
-                for agent_id in next_state.keys():
-                    if done[agent_id]:
-                        continue
-                    state[agent_id] = next_state[agent_id]
-
-            for agent_id, agent_batch in _batch.items():
-                if len(agent_batch['state']) == 0:
-                    continue
-                states += agent_batch['state']
-                acts += agent_batch['acts']
-                dones += agent_batch['done']
-                next_states += agent_batch['next_state']
-                rewards += agent_batch['reward']
-                log_probs += agent_batch['log_prob']
-                advs += agent_batch['adv']
-                discounted_reward += agent_batch['discounted_reward']
-
-        idx = np.arange(len(states) // mini_batch * mini_batch).astype(np.long)
-        random.shuffle(idx)
-        idx = torch.from_numpy(idx)
-        rewards = torch.tensor(rewards).reshape(-1, 1)[idx].float()
-        states = torch.tensor(states)[idx].float()
-        next_states = torch.tensor(next_states)[idx].float()
-        acts = torch.tensor(acts)[idx].float()
-        log_probs = torch.from_numpy(np.array(log_probs)).reshape(-1, 1)[idx].float()
-        dones = torch.tensor(dones).int().reshape(-1, 1)[idx]
-        advs = torch.tensor(advs).float()[idx]
-        discounted_reward = torch.tensor(discounted_reward).float()[idx]
-        batch = {"state": states, "action": acts,
-                 "log_prob": log_probs,
-                 "next_state": next_states, "done": dones,
-                 "reward": rewards, "adv": advs,
-                 "discounted_reward": discounted_reward}
-        return batch, x_distance_log, success_log
-
     def action(self, state):
         return self.ppo.action(state)
 
     def train(self, expert_path, feature, descriptor=None, kld_limit=False):
-        if self.train_param['pre_train']:
-            self.load_model('bc-feature16/model.pth')
         if not os.path.exists(f'{self.args.exp}'):
             os.mkdir(f'{self.args.exp}')
         if not os.path.exists(f'{self.args.exp}/model'):
@@ -383,10 +262,7 @@ class GAIL_PPO:
             vloss = 0
             dloss = 0
             for _ in range(self.train_param['policy_mini_epoch']):
-                if episode < self.train_param['pre_train_epoch'] and self.train_param['pre_train']:
-                    _vloss, _aloss = self.ppo.update(batch, gamma, mini_batch, value_only=True)
-                else:
-                    _vloss, _aloss = self.ppo.update(batch, gamma, mini_batch)
+                _vloss, _aloss = self.ppo.update(batch, gamma, mini_batch)
                 aloss += _aloss
                 vloss += _vloss
 

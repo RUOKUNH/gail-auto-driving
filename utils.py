@@ -1388,6 +1388,69 @@ def feature15_descriptor3(obs):
     return _obs
 
 
+# neibor_info[i][0] = x - e_x
+# neibor_info[i][1] = y - e_y
+# neibor_info[i][2] = s_x - e_sx
+# neibor_info[i][3] = s_y - e_sy
+# neibor_info[i][4] = np.sin(heading)
+# neibor_info[i][5] = l
+# neibor_info[i][6] = w
+def feature15_descriptor4(obs):
+    e_x, e_y, sin_h, lane_offset, e_l, e_w, e_s_lane, e_s_lateral, \
+    e_s, marker_dist_l, marker_dist_r = obs[:-56]
+    _obs = [sin_h, lane_offset, marker_dist_r, marker_dist_l]
+    front1 = obs[11:18]
+    front2 = obs[-7:]
+    lside1 = obs[18:25]
+    lside2 = obs[25:32]
+    back1 = obs[32:39]
+    back2 = obs[39:46]
+    rside1 = obs[46:53]
+    rside2 = obs[53:60]
+    frontinfo = get_info(front1, front2, 1, e_l, e_w)
+    lsideinfo = get_info(lside1, lside2, 2, e_l, e_w)
+    backinfo = get_info(back1, back2, 3, e_l, e_w)
+    rsideinfo = get_info(rside1, rside2, 4, e_l, e_w)
+    _obs = _obs + frontinfo + lsideinfo + backinfo + rsideinfo
+
+    return _obs
+
+def get_info(neighbor1, neighbor2, flag, el, ew):
+    if neighbor1[0] == 0 and neighbor2[0] == 0:
+        return [0, 0, 0, 0]
+    if neighbor1[0] == 0:
+        n = 2
+    if neighbor2[0] == 0:
+        n = 1
+    d1 = neighbor1[0]**2 + neighbor1[1]**2
+    d2 = neighbor2[0]**2 + neighbor2[1]**2
+    if d1 < d2:
+        n = 1
+    else:
+        n = 2
+    if n == 2:
+        l, w = neighbor2[-2:]
+        dx = neighbor2[0]
+        dy = neighbor2[1]
+        dsx, dsy = neighbor2[2:4]
+    if n == 1:
+        l, w = neighbor1[-2:]
+        dx = neighbor1[0]
+        dy = neighbor1[1]
+        dsx, dsy = neighbor1[2:4]
+    if flag == 1:
+        dx -= (l + el) / 2
+    if flag == 2:
+        dy -= (w + ew) / 2
+    if flag == 3:
+        dx += (l + el) / 2
+    if flag == 4:
+        dy += (w + ew) / 2
+    return [dx, dy, dsx, dsy]
+
+
+
+
 def feature17(obs):
     ego_state = obs[0]
     vehicles = []

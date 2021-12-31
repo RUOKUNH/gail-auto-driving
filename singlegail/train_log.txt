@@ -1,0 +1,205 @@
+
+
+
+Thu Dec 30 18:31:49 2021
+train_params:
+policy_net:[512, 256, 128, 64]
+policy_net_drop_rate:None
+value_net:[512, 256, 128, 64]
+value_net_drop_rate:None
+critic_net:[512, 256, 128, 64]
+critic_net_drop_rate:None
+state_dim:20
+action_dim:2
+policy_lr:5e-05
+value_lr:5e-05
+critic_lr:5e-05
+max_kl:0.01
+beta:1
+gamma:0.99
+max_step:1000
+batch_size:1024
+critic_mini_batch:1024
+mini_batch:1024
+policy_mini_epoch:10
+critic_mini_epoch:10
+penalty:True
+line_search:False
+l2_norm:False
+l2_norm_weight:0.01
+use_entropy:False
+critic_penalty:True
+penalty_weight:1.5
+action_limit:False
+singlegail episode 0 critic loss 13.71 actor loss -0.03 value loss 9.95 mdist 26.7 srate 0.000 exp_score 0.47 gen_score 0.44 time 51.39076781272888
+singlegail episode 1 critic loss 13.38 actor loss -0.04 value loss 10.06 mdist 35.6 srate 0.000 exp_score 0.46 gen_score 0.42 time 46.29557132720947
+singlegail episode 2 critic loss 13.14 actor loss -0.02 value loss 10.12 mdist 25.0 srate 0.000 exp_score 0.46 gen_score 0.40 time 51.83189940452576
+singlegail episode 3 critic loss 12.86 actor loss -0.03 value loss 9.69 mdist 28.6 srate 0.000 exp_score 0.46 gen_score 0.37 time 53.70451545715332
+singlegail episode 4 critic loss 12.67 actor loss -0.01 value loss 9.48 mdist 23.1 srate 0.000 exp_score 0.46 gen_score 0.36 time 50.77814173698425
+singlegail episode 5 critic loss 12.18 actor loss -0.03 value loss 9.34 mdist 25.6 srate 0.000 exp_score 0.47 gen_score 0.32 time 48.588581562042236
+singlegail episode 6 critic loss 12.17 actor loss -0.01 value loss 9.44 mdist 29.7 srate 0.000 exp_score 0.48 gen_score 0.33 time 50.996649742126465
+singlegail episode 7 critic loss 12.08 actor loss -0.02 value loss 9.38 mdist 22.1 srate 0.000 exp_score 0.49 gen_score 0.34 time 45.61753964424133
+singlegail episode 8 critic loss 11.35 actor loss -0.05 value loss 10.53 mdist 27.2 srate 0.000 exp_score 0.51 gen_score 0.27 time 49.8970251083374
+singlegail episode 9 critic loss 11.15 actor loss -0.02 value loss 14.68 mdist 32.5 srate 0.000 exp_score 0.53 gen_score 0.28 time 50.1868257522583
+singlegail episode 10 critic loss 10.89 actor loss -0.05 value loss 19.49 mdist 30.2 srate 0.000 exp_score 0.55 gen_score 0.26 time 47.646859645843506
+singlegail episode 11 critic loss 10.76 actor loss -0.07 value loss 39.87 mdist 31.6 srate 0.000 exp_score 0.58 gen_score 0.27 time 48.43781614303589
+singlegail episode 12 critic loss 10.53 actor loss -0.06 value loss 40.81 mdist 32.5 srate 0.000 exp_score 0.60 gen_score 0.26 time 47.02213740348816
+singlegail episode 13 critic loss 10.22 actor loss -0.07 value loss 41.91 mdist 31.8 srate 0.000 exp_score 0.63 gen_score 0.27 time 46.052470445632935
+singlegail episode 14 critic loss 10.20 actor loss -0.11 value loss 38.93 mdist 36.4 srate 0.000 exp_score 0.65 gen_score 0.27 time 42.445205211639404
+singlegail episode 15 critic loss 10.05 actor loss -0.11 value loss 34.93 mdist 31.0 srate 0.000 exp_score 0.68 gen_score 0.29 time 48.851638317108154
+singlegail episode 16 critic loss 10.21 actor loss -0.13 value loss 32.37 mdist 29.2 srate 0.000 exp_score 0.67 gen_score 0.27 time 43.76072573661804
+singlegail episode 17 critic loss 9.96 actor loss -0.11 value loss 23.32 mdist 33.3 srate 0.000 exp_score 0.69 gen_score 0.28 time 45.725302934646606
+singlegail episode 18 critic loss 9.98 actor loss -0.13 value loss 26.00 mdist 34.3 srate 0.000 exp_score 0.70 gen_score 0.29 time 45.750328063964844
+singlegail episode 19 critic loss 9.93 actor loss -0.16 value loss 19.32 mdist 38.1 srate 0.000 exp_score 0.70 gen_score 0.29 time 45.21843886375427
+singlegail episode 20 critic loss 10.00 actor loss -0.11 value loss 14.17 mdist 33.3 srate 0.000 exp_score 0.70 gen_score 0.28 time 44.423261642456055
+singlegail episode 21 critic loss 10.26 actor loss -0.09 value loss 13.04 mdist 41.5 srate 0.000 exp_score 0.67 gen_score 0.28 time 41.19847393035889
+singlegail episode 22 critic loss 10.01 actor loss -0.15 value loss 11.95 mdist 58.0 srate 0.000 exp_score 0.70 gen_score 0.30 time 42.535271406173706
+singlegail episode 23 critic loss 9.98 actor loss -0.20 value loss 13.86 mdist 55.2 srate 0.000 exp_score 0.69 gen_score 0.28 time 46.5269410610199
+singlegail episode 24 critic loss 10.04 actor loss -0.24 value loss 14.34 mdist 63.2 srate 0.000 exp_score 0.68 gen_score 0.28 time 47.67851781845093
+singlegail episode 25 critic loss 10.04 actor loss -0.19 value loss 11.32 mdist 56.8 srate 0.000 exp_score 0.70 gen_score 0.29 time 48.742982387542725
+singlegail episode 26 critic loss 10.22 actor loss -0.14 value loss 11.21 mdist 92.7 srate 0.154 exp_score 0.67 gen_score 0.28 time 46.197749614715576
+singlegail episode 27 critic loss 10.03 actor loss -0.17 value loss 11.10 mdist 101.6 srate 0.091 exp_score 0.70 gen_score 0.30 time 42.21455097198486
+singlegail episode 28 critic loss 10.24 actor loss -0.10 value loss 10.30 mdist 83.3 srate 0.000 exp_score 0.69 gen_score 0.30 time 47.00665879249573
+singlegail episode 29 critic loss 10.06 actor loss -0.13 value loss 9.71 mdist 66.2 srate 0.000 exp_score 0.70 gen_score 0.30 time 48.52218222618103
+singlegail episode 30 critic loss 10.15 actor loss -0.10 value loss 11.10 mdist 103.3 srate 0.000 exp_score 0.70 gen_score 0.31 time 48.35307598114014
+singlegail episode 31 critic loss 10.02 actor loss -0.09 value loss 9.95 mdist 133.0 srate 0.222 exp_score 0.70 gen_score 0.28 time 47.64222979545593
+singlegail episode 32 critic loss 10.28 actor loss -0.08 value loss 10.73 mdist 92.5 srate 0.000 exp_score 0.67 gen_score 0.30 time 46.147923946380615
+singlegail episode 33 critic loss 10.23 actor loss -0.05 value loss 10.18 mdist 102.6 srate 0.000 exp_score 0.68 gen_score 0.30 time 43.41239333152771
+singlegail episode 34 critic loss 10.50 actor loss -0.06 value loss 11.23 mdist 129.7 srate 0.000 exp_score 0.67 gen_score 0.32 time 52.31572341918945
+singlegail episode 35 critic loss 10.44 actor loss -0.03 value loss 10.37 mdist 83.5 srate 0.000 exp_score 0.69 gen_score 0.32 time 48.846768617630005
+singlegail episode 36 critic loss 10.29 actor loss -0.06 value loss 10.32 mdist 94.1 srate 0.000 exp_score 0.69 gen_score 0.31 time 46.680309772491455
+singlegail episode 37 critic loss 10.18 actor loss -0.07 value loss 11.22 mdist 101.9 srate 0.111 exp_score 0.69 gen_score 0.29 time 47.40302228927612
+singlegail episode 38 critic loss 10.40 actor loss -0.05 value loss 10.24 mdist 104.2 srate 0.100 exp_score 0.67 gen_score 0.32 time 41.983914613723755
+singlegail episode 39 critic loss 10.30 actor loss -0.04 value loss 11.09 mdist 80.8 srate 0.000 exp_score 0.71 gen_score 0.32 time 47.177019119262695
+singlegail episode 40 critic loss 10.04 actor loss -0.03 value loss 10.68 mdist 83.8 srate 0.000 exp_score 0.72 gen_score 0.30 time 41.91470289230347
+singlegail episode 41 critic loss 10.30 actor loss -0.04 value loss 9.05 mdist 124.9 srate 0.222 exp_score 0.69 gen_score 0.31 time 48.19663643836975
+singlegail episode 42 critic loss 10.02 actor loss -0.07 value loss 11.99 mdist 129.1 srate 0.083 exp_score 0.71 gen_score 0.29 time 46.48662233352661
+singlegail episode 43 critic loss 10.24 actor loss -0.04 value loss 11.15 mdist 177.0 srate 0.111 exp_score 0.69 gen_score 0.31 time 46.877206325531006
+singlegail episode 44 critic loss 10.09 actor loss -0.06 value loss 8.40 mdist 153.5 srate 0.143 exp_score 0.69 gen_score 0.30 time 46.877161502838135
+singlegail episode 45 critic loss 10.11 actor loss -0.03 value loss 12.33 mdist 176.4 srate 0.125 exp_score 0.72 gen_score 0.32 time 42.874398946762085
+singlegail episode 46 critic loss 10.19 actor loss -0.05 value loss 12.95 mdist 107.9 srate 0.000 exp_score 0.70 gen_score 0.33 time 44.216187477111816
+singlegail episode 47 critic loss 10.00 actor loss -0.07 value loss 15.42 mdist 96.1 srate 0.000 exp_score 0.71 gen_score 0.29 time 51.411325454711914
+singlegail episode 48 critic loss 9.97 actor loss -0.04 value loss 13.08 mdist 133.1 srate 0.100 exp_score 0.72 gen_score 0.31 time 57.991782426834106
+singlegail episode 49 critic loss 10.01 actor loss -0.05 value loss 20.33 mdist 88.1 srate 0.000 exp_score 0.72 gen_score 0.30 time 48.812735080718994
+singlegail episode 50 critic loss 9.99 actor loss -0.04 value loss 11.20 mdist 121.6 srate 0.125 exp_score 0.72 gen_score 0.31 time 51.37471389770508
+singlegail episode 51 critic loss 10.11 actor loss -0.06 value loss 21.85 mdist 82.1 srate 0.077 exp_score 0.70 gen_score 0.30 time 44.76171517372131
+singlegail episode 52 critic loss 10.18 actor loss -0.06 value loss 26.02 mdist 116.4 srate 0.000 exp_score 0.69 gen_score 0.31 time 48.736467599868774
+singlegail episode 53 critic loss 9.94 actor loss -0.05 value loss 35.03 mdist 110.3 srate 0.000 exp_score 0.72 gen_score 0.30 time 49.272724866867065
+singlegail episode 54 critic loss 9.91 actor loss -0.04 value loss 29.97 mdist 105.7 srate 0.091 exp_score 0.73 gen_score 0.30 time 53.18684458732605
+singlegail episode 55 critic loss 10.04 actor loss -0.04 value loss 38.61 mdist 161.1 srate 0.143 exp_score 0.71 gen_score 0.31 time 47.740490198135376
+singlegail episode 56 critic loss 10.09 actor loss -0.05 value loss 39.43 mdist 137.6 srate 0.200 exp_score 0.68 gen_score 0.30 time 50.180850982666016
+singlegail episode 57 critic loss 10.08 actor loss -0.06 value loss 46.97 mdist 107.9 srate 0.091 exp_score 0.70 gen_score 0.31 time 52.06788921356201
+singlegail episode 58 critic loss 9.99 actor loss -0.07 value loss 43.13 mdist 123.9 srate 0.111 exp_score 0.72 gen_score 0.30 time 53.6589617729187
+singlegail episode 59 critic loss 10.03 actor loss -0.04 value loss 42.05 mdist 104.1 srate 0.091 exp_score 0.71 gen_score 0.31 time 49.286534786224365
+singlegail episode 60 critic loss 10.10 actor loss -0.07 value loss 33.47 mdist 162.1 srate 0.143 exp_score 0.71 gen_score 0.30 time 46.520867586135864
+singlegail episode 61 critic loss 10.24 actor loss -0.14 value loss 39.18 mdist 97.6 srate 0.125 exp_score 0.71 gen_score 0.32 time 46.209556341171265
+singlegail episode 62 critic loss 9.97 actor loss -0.07 value loss 34.50 mdist 72.1 srate 0.000 exp_score 0.73 gen_score 0.31 time 48.05374073982239
+singlegail episode 63 critic loss 9.89 actor loss -0.12 value loss 48.77 mdist 88.5 srate 0.000 exp_score 0.73 gen_score 0.31 time 45.43757486343384
+singlegail episode 64 critic loss 9.96 actor loss -0.05 value loss 85.73 mdist 106.3 srate 0.000 exp_score 0.71 gen_score 0.30 time 44.686853885650635
+singlegail episode 65 critic loss 9.91 actor loss -0.11 value loss 59.84 mdist 60.4 srate 0.000 exp_score 0.71 gen_score 0.30 time 47.417290687561035
+singlegail episode 66 critic loss 9.94 actor loss -0.03 value loss 95.76 mdist 81.4 srate 0.000 exp_score 0.72 gen_score 0.31 time 47.15418744087219
+singlegail episode 67 critic loss 9.88 actor loss -0.02 value loss 72.43 mdist 46.3 srate 0.000 exp_score 0.72 gen_score 0.29 time 44.542017698287964
+singlegail episode 68 critic loss 9.93 actor loss -0.05 value loss 75.88 mdist 58.1 srate 0.000 exp_score 0.70 gen_score 0.29 time 43.732553482055664
+singlegail episode 69 critic loss 9.87 actor loss -0.04 value loss 61.00 mdist 66.8 srate 0.000 exp_score 0.71 gen_score 0.29 time 47.580047369003296
+singlegail episode 70 critic loss 10.04 actor loss 0.00 value loss 51.65 mdist 64.8 srate 0.000 exp_score 0.70 gen_score 0.30 time 44.69138693809509
+singlegail episode 71 critic loss 10.03 actor loss -0.12 value loss 27.93 mdist 82.6 srate 0.000 exp_score 0.70 gen_score 0.29 time 47.14227795600891
+singlegail episode 72 critic loss 10.03 actor loss -0.05 value loss 35.68 mdist 72.2 srate 0.000 exp_score 0.70 gen_score 0.30 time 47.539960622787476
+singlegail episode 73 critic loss 9.93 actor loss -0.12 value loss 45.61 mdist 60.2 srate 0.000 exp_score 0.71 gen_score 0.31 time 47.85727500915527
+singlegail episode 74 critic loss 9.97 actor loss -0.13 value loss 38.18 mdist 73.6 srate 0.000 exp_score 0.73 gen_score 0.30 time 45.453835010528564
+singlegail episode 75 critic loss 10.09 actor loss -0.06 value loss 48.95 mdist 87.9 srate 0.000 exp_score 0.70 gen_score 0.29 time 47.03989839553833
+singlegail episode 76 critic loss 9.92 actor loss -0.05 value loss 41.34 mdist 100.6 srate 0.000 exp_score 0.72 gen_score 0.30 time 46.379170179367065
+singlegail episode 77 critic loss 10.05 actor loss -0.15 value loss 44.79 mdist 151.2 srate 0.111 exp_score 0.71 gen_score 0.29 time 49.064961671829224
+singlegail episode 78 critic loss 9.98 actor loss -0.09 value loss 25.71 mdist 100.0 srate 0.000 exp_score 0.70 gen_score 0.29 time 48.700886249542236
+singlegail episode 79 critic loss 9.98 actor loss -0.12 value loss 33.37 mdist 68.2 srate 0.000 exp_score 0.72 gen_score 0.31 time 52.23629069328308
+singlegail episode 80 critic loss 9.82 actor loss -0.06 value loss 24.44 mdist 71.7 srate 0.000 exp_score 0.73 gen_score 0.30 time 51.514638900756836
+singlegail episode 81 critic loss 10.18 actor loss -0.10 value loss 66.47 mdist 65.1 srate 0.000 exp_score 0.68 gen_score 0.28 time 49.50187397003174
+singlegail episode 82 critic loss 9.92 actor loss -0.05 value loss 38.53 mdist 72.9 srate 0.000 exp_score 0.70 gen_score 0.29 time 44.52475929260254
+singlegail episode 83 critic loss 9.92 actor loss -0.03 value loss 51.73 mdist 107.3 srate 0.100 exp_score 0.72 gen_score 0.32 time 48.56241011619568
+singlegail episode 84 critic loss 9.94 actor loss 0.12 value loss 54.06 mdist 63.7 srate 0.000 exp_score 0.71 gen_score 0.29 time 47.15394687652588
+singlegail episode 85 critic loss 9.97 actor loss -0.05 value loss 53.61 mdist 93.1 srate 0.000 exp_score 0.71 gen_score 0.29 time 48.13743829727173
+singlegail episode 86 critic loss 9.83 actor loss -0.04 value loss 34.24 mdist 106.6 srate 0.000 exp_score 0.72 gen_score 0.29 time 43.27653360366821
+singlegail episode 87 critic loss 9.93 actor loss -0.05 value loss 50.08 mdist 96.2 srate 0.100 exp_score 0.71 gen_score 0.30 time 41.71522831916809
+singlegail episode 88 critic loss 10.22 actor loss -0.05 value loss 77.58 mdist 97.6 srate 0.100 exp_score 0.69 gen_score 0.30 time 39.89269733428955
+singlegail episode 89 critic loss 9.92 actor loss -0.03 value loss 48.83 mdist 96.4 srate 0.083 exp_score 0.72 gen_score 0.30 time 40.512690782547
+singlegail episode 90 critic loss 9.83 actor loss -0.03 value loss 32.71 mdist 108.0 srate 0.100 exp_score 0.73 gen_score 0.30 time 42.10890603065491
+singlegail episode 91 critic loss 9.85 actor loss -0.03 value loss 48.67 mdist 65.9 srate 0.000 exp_score 0.72 gen_score 0.30 time 39.640480518341064
+singlegail episode 92 critic loss 9.92 actor loss -0.05 value loss 66.39 mdist 78.5 srate 0.000 exp_score 0.70 gen_score 0.30 time 40.63430571556091
+singlegail episode 93 critic loss 9.83 actor loss -0.02 value loss 47.97 mdist 73.8 srate 0.000 exp_score 0.72 gen_score 0.30 time 42.52613019943237
+singlegail episode 94 critic loss 9.97 actor loss -0.07 value loss 52.05 mdist 70.4 srate 0.000 exp_score 0.72 gen_score 0.30 time 42.38349747657776
+singlegail episode 95 critic loss 10.01 actor loss -0.13 value loss 71.70 mdist 87.1 srate 0.000 exp_score 0.70 gen_score 0.30 time 38.56190299987793
+singlegail episode 96 critic loss 9.99 actor loss -0.13 value loss 69.92 mdist 78.5 srate 0.000 exp_score 0.71 gen_score 0.31 time 42.085620164871216
+singlegail episode 97 critic loss 10.07 actor loss -0.07 value loss 47.10 mdist 112.3 srate 0.100 exp_score 0.71 gen_score 0.28 time 39.69407606124878
+singlegail episode 98 critic loss 10.00 actor loss -0.05 value loss 45.61 mdist 91.1 srate 0.000 exp_score 0.72 gen_score 0.30 time 39.22154998779297
+singlegail episode 99 critic loss 9.99 actor loss -0.08 value loss 39.05 mdist 95.8 srate 0.100 exp_score 0.71 gen_score 0.29 time 35.890544414520264
+singlegail episode 100 critic loss 9.87 actor loss -0.03 value loss 58.89 mdist 163.6 srate 0.111 exp_score 0.73 gen_score 0.30 time 42.84176540374756
+singlegail episode 101 critic loss 9.91 actor loss -0.05 value loss 74.54 mdist 66.2 srate 0.000 exp_score 0.72 gen_score 0.31 time 43.45500636100769
+singlegail episode 102 critic loss 10.13 actor loss -0.07 value loss 64.29 mdist 79.4 srate 0.067 exp_score 0.69 gen_score 0.30 time 45.98139691352844
+singlegail episode 103 critic loss 10.08 actor loss -0.09 value loss 46.76 mdist 122.3 srate 0.100 exp_score 0.70 gen_score 0.30 time 41.698349714279175
+singlegail episode 104 critic loss 9.99 actor loss -0.05 value loss 79.46 mdist 73.4 srate 0.000 exp_score 0.72 gen_score 0.32 time 39.09419393539429
+singlegail episode 105 critic loss 10.12 actor loss -0.03 value loss 45.32 mdist 133.3 srate 0.143 exp_score 0.70 gen_score 0.31 time 40.104618310928345
+singlegail episode 106 critic loss 9.96 actor loss -0.02 value loss 73.20 mdist 69.0 srate 0.000 exp_score 0.71 gen_score 0.30 time 40.133193254470825
+singlegail episode 107 critic loss 9.93 actor loss -0.13 value loss 50.43 mdist 90.1 srate 0.000 exp_score 0.72 gen_score 0.30 time 42.998634338378906
+singlegail episode 108 critic loss 9.96 actor loss -0.05 value loss 63.71 mdist 100.9 srate 0.000 exp_score 0.71 gen_score 0.31 time 40.153820276260376
+singlegail episode 109 critic loss 10.03 actor loss 0.04 value loss 67.41 mdist 124.1 srate 0.000 exp_score 0.71 gen_score 0.31 time 39.31250810623169
+singlegail episode 110 critic loss 9.86 actor loss -0.03 value loss 61.23 mdist 106.3 srate 0.000 exp_score 0.72 gen_score 0.30 time 42.163721799850464
+singlegail episode 111 critic loss 9.77 actor loss -0.03 value loss 48.64 mdist 75.0 srate 0.000 exp_score 0.72 gen_score 0.30 time 44.09749436378479
+singlegail episode 112 critic loss 9.84 actor loss -0.03 value loss 60.77 mdist 83.3 srate 0.000 exp_score 0.72 gen_score 0.30 time 48.669530153274536
+singlegail episode 113 critic loss 10.03 actor loss -0.04 value loss 62.82 mdist 158.9 srate 0.125 exp_score 0.69 gen_score 0.29 time 41.38381290435791
+singlegail episode 114 critic loss 10.00 actor loss -0.03 value loss 58.96 mdist 81.3 srate 0.000 exp_score 0.72 gen_score 0.31 time 44.46850514411926
+singlegail episode 115 critic loss 9.79 actor loss -0.05 value loss 42.14 mdist 98.6 srate 0.000 exp_score 0.73 gen_score 0.31 time 40.413705587387085
+singlegail episode 116 critic loss 10.09 actor loss -0.02 value loss 74.03 mdist 75.3 srate 0.000 exp_score 0.70 gen_score 0.31 time 41.57387614250183
+singlegail episode 117 critic loss 9.95 actor loss -0.06 value loss 79.83 mdist 89.8 srate 0.000 exp_score 0.70 gen_score 0.29 time 39.35437536239624
+singlegail episode 118 critic loss 10.08 actor loss -0.04 value loss 85.40 mdist 81.7 srate 0.091 exp_score 0.71 gen_score 0.31 time 39.346917390823364
+singlegail episode 119 critic loss 9.92 actor loss -0.03 value loss 71.49 mdist 138.1 srate 0.111 exp_score 0.71 gen_score 0.29 time 39.82515239715576
+singlegail episode 120 critic loss 9.86 actor loss -0.05 value loss 51.13 mdist 171.6 srate 0.143 exp_score 0.72 gen_score 0.31 time 44.4909553527832
+singlegail episode 121 critic loss 9.95 actor loss -0.01 value loss 46.52 mdist 118.1 srate 0.100 exp_score 0.71 gen_score 0.30 time 44.73767852783203
+singlegail episode 122 critic loss 10.09 actor loss -0.06 value loss 84.50 mdist 122.6 srate 0.000 exp_score 0.69 gen_score 0.30 time 38.18179154396057
+singlegail episode 123 critic loss 9.85 actor loss -0.05 value loss 48.77 mdist 142.6 srate 0.250 exp_score 0.72 gen_score 0.30 time 37.96975922584534
+singlegail episode 124 critic loss 9.93 actor loss -0.05 value loss 54.43 mdist 112.5 srate 0.100 exp_score 0.72 gen_score 0.32 time 45.817389726638794
+singlegail episode 125 critic loss 9.80 actor loss -0.04 value loss 62.44 mdist 75.5 srate 0.000 exp_score 0.71 gen_score 0.29 time 39.292712688446045
+singlegail episode 126 critic loss 10.06 actor loss -0.06 value loss 96.31 mdist 112.9 srate 0.000 exp_score 0.70 gen_score 0.31 time 41.194531202316284
+singlegail episode 127 critic loss 9.92 actor loss -0.09 value loss 76.23 mdist 67.7 srate 0.000 exp_score 0.72 gen_score 0.30 time 42.05722784996033
+singlegail episode 128 critic loss 9.82 actor loss -0.03 value loss 51.02 mdist 54.2 srate 0.000 exp_score 0.73 gen_score 0.30 time 42.68613958358765
+singlegail episode 129 critic loss 10.05 actor loss -0.06 value loss 54.09 mdist 73.7 srate 0.000 exp_score 0.70 gen_score 0.30 time 46.21965670585632
+singlegail episode 130 critic loss 9.85 actor loss -0.03 value loss 57.84 mdist 99.1 srate 0.091 exp_score 0.71 gen_score 0.29 time 48.02098774909973
+singlegail episode 131 critic loss 9.98 actor loss -0.04 value loss 65.69 mdist 110.6 srate 0.000 exp_score 0.73 gen_score 0.31 time 42.09140133857727
+singlegail episode 132 critic loss 9.99 actor loss -0.07 value loss 64.36 mdist 120.9 srate 0.111 exp_score 0.70 gen_score 0.29 time 39.901856422424316
+singlegail episode 133 critic loss 9.84 actor loss -0.02 value loss 47.02 mdist 98.7 srate 0.000 exp_score 0.72 gen_score 0.29 time 43.31634736061096
+singlegail episode 134 critic loss 10.19 actor loss -0.06 value loss 80.35 mdist 77.4 srate 0.000 exp_score 0.71 gen_score 0.33 time 44.16413402557373
+singlegail episode 135 critic loss 9.78 actor loss 0.23 value loss 60.00 mdist 95.3 srate 0.000 exp_score 0.71 gen_score 0.28 time 39.43744492530823
+singlegail episode 136 critic loss 9.84 actor loss 0.02 value loss 100.11 mdist 79.6 srate 0.000 exp_score 0.72 gen_score 0.30 time 40.40393304824829
+singlegail episode 137 critic loss 9.79 actor loss -0.01 value loss 59.62 mdist 118.1 srate 0.100 exp_score 0.71 gen_score 0.29 time 43.05682110786438
+singlegail episode 138 critic loss 9.99 actor loss -0.03 value loss 73.01 mdist 92.8 srate 0.000 exp_score 0.70 gen_score 0.30 time 38.70073223114014
+singlegail episode 139 critic loss 9.83 actor loss -0.06 value loss 101.14 mdist 136.1 srate 0.111 exp_score 0.71 gen_score 0.28 time 39.91185808181763
+singlegail episode 140 critic loss 9.87 actor loss -0.03 value loss 54.34 mdist 95.3 srate 0.000 exp_score 0.73 gen_score 0.31 time 40.699881076812744
+singlegail episode 141 critic loss 9.80 actor loss -0.00 value loss 75.05 mdist 106.2 srate 0.000 exp_score 0.72 gen_score 0.29 time 46.59793996810913
+singlegail episode 142 critic loss 9.82 actor loss 0.10 value loss 49.11 mdist 103.9 srate 0.091 exp_score 0.71 gen_score 0.29 time 41.6786425113678
+singlegail episode 143 critic loss 9.80 actor loss 0.30 value loss 45.52 mdist 85.5 srate 0.091 exp_score 0.71 gen_score 0.29 time 43.79289484024048
+singlegail episode 144 critic loss 9.87 actor loss 0.09 value loss 88.74 mdist 114.4 srate 0.091 exp_score 0.71 gen_score 0.30 time 41.1707022190094
+singlegail episode 145 critic loss 9.99 actor loss 0.10 value loss 72.81 mdist 80.0 srate 0.000 exp_score 0.70 gen_score 0.30 time 39.77539038658142
+singlegail episode 146 critic loss 9.80 actor loss 0.08 value loss 76.19 mdist 111.4 srate 0.111 exp_score 0.72 gen_score 0.29 time 40.17242670059204
+singlegail episode 147 critic loss 9.88 actor loss -0.06 value loss 83.32 mdist 94.0 srate 0.000 exp_score 0.72 gen_score 0.30 time 41.58774399757385
+singlegail episode 148 critic loss 9.81 actor loss 0.04 value loss 44.18 mdist 85.6 srate 0.000 exp_score 0.71 gen_score 0.29 time 42.672486543655396
+singlegail episode 149 critic loss 9.83 actor loss -0.06 value loss 57.85 mdist 91.0 srate 0.083 exp_score 0.71 gen_score 0.29 time 42.13686394691467
+singlegail episode 150 critic loss 10.11 actor loss -0.04 value loss 55.00 mdist 136.5 srate 0.125 exp_score 0.69 gen_score 0.29 time 44.26127362251282
+singlegail episode 151 critic loss 9.85 actor loss 0.17 value loss 54.70 mdist 91.3 srate 0.000 exp_score 0.71 gen_score 0.29 time 41.60780096054077
+singlegail episode 152 critic loss 9.97 actor loss 0.07 value loss 70.03 mdist 99.3 srate 0.000 exp_score 0.71 gen_score 0.30 time 40.383936643600464
+singlegail episode 153 critic loss 9.98 actor loss 0.11 value loss 93.80 mdist 125.9 srate 0.111 exp_score 0.69 gen_score 0.29 time 41.427977323532104
+singlegail episode 154 critic loss 9.85 actor loss -0.01 value loss 73.86 mdist 88.3 srate 0.000 exp_score 0.73 gen_score 0.30 time 43.58339023590088
+singlegail episode 155 critic loss 9.82 actor loss -0.02 value loss 73.40 mdist 95.6 srate 0.000 exp_score 0.73 gen_score 0.30 time 39.358423948287964
+singlegail episode 156 critic loss 9.86 actor loss -0.01 value loss 84.27 mdist 83.9 srate 0.077 exp_score 0.71 gen_score 0.29 time 44.30279994010925
+singlegail episode 157 critic loss 9.85 actor loss -0.05 value loss 96.89 mdist 106.0 srate 0.000 exp_score 0.72 gen_score 0.29 time 42.720662117004395
+singlegail episode 158 critic loss 9.80 actor loss -0.06 value loss 78.01 mdist 93.0 srate 0.000 exp_score 0.72 gen_score 0.30 time 45.12666606903076
+singlegail episode 159 critic loss 9.83 actor loss 0.50 value loss 84.54 mdist 97.7 srate 0.111 exp_score 0.71 gen_score 0.29 time 34.219839096069336
+singlegail episode 160 critic loss 9.89 actor loss -0.03 value loss 66.48 mdist 67.6 srate 0.000 exp_score 0.71 gen_score 0.29 time 39.37472105026245
+singlegail episode 161 critic loss 9.89 actor loss 0.15 value loss 49.36 mdist 151.1 srate 0.000 exp_score 0.72 gen_score 0.29 time 41.3973343372345
+singlegail episode 162 critic loss 9.91 actor loss 0.09 value loss 64.81 mdist 94.6 srate 0.000 exp_score 0.70 gen_score 0.29 time 35.817710399627686
+singlegail episode 163 critic loss 9.94 actor loss -0.01 value loss 81.95 mdist 61.2 srate 0.000 exp_score 0.71 gen_score 0.29 time 39.96560740470886
+singlegail episode 164 critic loss 9.90 actor loss 0.63 value loss 91.59 mdist 109.0 srate 0.100 exp_score 0.71 gen_score 0.30 time 40.98273992538452
+singlegail episode 165 critic loss 9.78 actor loss 0.06 value loss 48.21 mdist 94.2 srate 0.083 exp_score 0.72 gen_score 0.30 time 42.430633783340454
+singlegail episode 166 critic loss 10.12 actor loss 0.01 value loss 71.03 mdist 124.8 srate 0.000 exp_score 0.69 gen_score 0.30 time 37.17913889884949
+singlegail episode 167 critic loss 9.86 actor loss -0.04 value loss 49.13 mdist 77.9 srate 0.000 exp_score 0.72 gen_score 0.29 time 40.53715991973877
+singlegail episode 168 critic loss 9.76 actor loss -0.06 value loss 82.82 mdist 60.0 srate 0.000 exp_score 0.73 gen_score 0.31 time 40.25222897529602
+singlegail episode 169 critic loss 9.85 actor loss -0.06 value loss 48.69 mdist 97.4 srate 0.000 exp_score 0.71 gen_score 0.29 time 40.55942702293396
+singlegail episode 170 critic loss 9.87 actor loss -0.05 value loss 62.94 mdist 105.5 srate 0.000 exp_score 0.71 gen_score 0.29 time 42.26503229141235
+singlegail episode 171 critic loss 9.78 actor loss -0.04 value loss 51.15 mdist 59.0 srate 0.000 exp_score 0.72 gen_score 0.29 time 49.18217492103577

@@ -122,6 +122,8 @@ def train_gail(args):
     feature = feature15
     # state_dim = 62
     # descriptor = feature15_descriptor2
+    # state_dim = 20
+    # descriptor = feature15_descriptor4
     state_dim = 65
     descriptor = feature15_descriptor
     agent = GAIL_PPO(state_dim, action_dim, args)

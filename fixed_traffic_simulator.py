@@ -66,6 +66,8 @@ class FixedMATrafficSim:
             infos[k] = {
                 "vehicle_id": self.agentid_to_vehid[k],
                 "reached_goal": observations[k].events.reached_goal,
+                "cossision": len(observations[k].events.collisions)>0,
+                "wrong_way": observations[k].events.wrong_way,
             }
 
         dones["__all__"] = all(dones.values())
