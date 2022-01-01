@@ -32,20 +32,11 @@ class GAIL_PPO:
     ):
         if policy_net is None:
             policy_net = [512, 256, 128, 64]
-            # policy_net = [256, 128, 64, 32]
         self.train_param = {
             # basic info
             'policy_net': policy_net,
-            # 'policy_net_drop_rate': [0.5, 0.5, 0.3, 0.3, 0.3],
-            'policy_net_drop_rate': None,
             'value_net': [512, 256, 128, 64],
-            # 'value_net': [256, 128, 64, 32],
-            # 'value_net_drop_rate': [0.5, 0.5, 0.3, 0.3, 0.3],
-            'value_net_drop_rate': None,
             'critic_net': [512, 256, 128, 64],
-            # 'critic_net': [256, 128, 64, 32],
-            # 'critic_net_drop_rate': [0.5, 0.5, 0.3, 0.3, 0.3],
-            'critic_net_drop_rate': None,
             'state_dim': state_dim,
             'action_dim': action_dim,
 
@@ -59,19 +50,16 @@ class GAIL_PPO:
             'beta': 1,
             'gamma': 0.99,
             'max_step': 1000,
-            'batch_size': 1024,
-            'critic_mini_batch': 1024,
-            'mini_batch': 256,
-            'policy_mini_epoch': 10,
-            'critic_mini_epoch': 10,
+            'batch_size': 4096,
+            'critic_mini_batch': 4096,
+            'mini_batch': 1024,
+            'policy_mini_epoch': 5,
+            'critic_mini_epoch': 5,
             'penalty': True,
             'line_search': False,
-            'l2_norm': False,
-            'l2_norm_weight': 0.01,
-            'use_entropy':False,
 
             'critic_penalty': True,
-            'penalty_weight': 1.5,
+            'penalty_weight': 3,
 
             'action_limit': alim,
         }
@@ -94,7 +82,7 @@ class GAIL_PPO:
 
         self.args = args
 
-        self.agent_num = 1
+        self.agent_num = 20
         self.env = env = MATrafficSim(['../scenarios/ngsim'], self.agent_num)
 
     def normalize(self, state):
@@ -187,7 +175,7 @@ class GAIL_PPO:
     def action(self, state):
         return self.ppo.action(state)
 
-    def train(self, expert_path, feature, descriptor=None, kld_limit=False):
+    def train(self, expert_path, feature, descriptor=None):
         if not os.path.exists(f'{self.args.exp}'):
             os.mkdir(f'{self.args.exp}')
         if not os.path.exists(f'{self.args.exp}/model'):
@@ -198,6 +186,8 @@ class GAIL_PPO:
             name='Asia/Shanghai',
         )
         utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
+
+        # Train Log
         with open(log_path, 'a') as log:
             log.write(f"\n\n\n{time.asctime(utc_now.astimezone(SHA_TZ).timetuple())}")
             log.write(f"\ntrain_params:")
@@ -254,18 +244,20 @@ class GAIL_PPO:
             srate_log.append(np.mean(slog))
             self.save_model(f"{self.args.exp}/model/model_{episode}.pth")
 
-            # Update
             self.critic.train()
             self.ppo.policy.train()
             self.ppo.target_value.train()
             aloss = 0
             vloss = 0
             dloss = 0
+
+            # Update Policy
             for _ in range(self.train_param['policy_mini_epoch']):
                 _vloss, _aloss = self.ppo.update(batch, gamma, mini_batch)
                 aloss += _aloss
                 vloss += _vloss
 
+            # Update Critic
             for _ in range(self.train_param['critic_mini_epoch']):
                 expert_idx = np.arange(len(expert_state)).astype(np.long)
                 random.shuffle(expert_idx)
@@ -301,7 +293,6 @@ class GAIL_PPO:
                         critic_loss.backward()
                         self.critic_optimizer.step()
                     dloss += critic_loss.detach()
-            print(f"exp_pred_acc: {np.mean(np.array(_exp_score) > 0.5)}")
 
             dloss_log.append(dloss)
             aloss_log.append(aloss)
@@ -355,6 +346,3 @@ class GAIL_PPO:
     def load_model(self, path):
         state = torch.load(path, map_location=torch.device('cpu'))
         self.ppo.policy.load_state_dict(state['policy'])
-        # self.ppo.value.load_state_dict(state['value'])
-        # self.ppo.target_value.load_state_dict(state['value'])
-        # self.critic.load_state_dict(state['critic'])

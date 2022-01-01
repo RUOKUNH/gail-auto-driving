@@ -1,5 +1,3 @@
-import pdb
-
 import torch.nn.functional as F
 import torch
 
@@ -31,14 +29,8 @@ class BC:
         _dist = self.dist(state)
         log_probs = _dist.log_prob(action.reshape(_dist.sample().shape))
         actor_loss = torch.mean(-log_probs)
-        # l2_norm_loss = 1e-2 * torch.mean(self.policy.parameters())
         actor_loss1 = actor_loss.detach()
         actor_loss2 = actor_loss1
-
-        # _action = self.action(state)
-        # actor_loss1 = F.mse_loss(_action[:, 0], action[:, 0])
-        # actor_loss2 = F.mse_loss(_action[:, 1], action[:, 1])
-        # actor_loss = actor_loss2 + actor_loss1
 
         self.actor_optimizer.zero_grad()
         actor_loss.backward()

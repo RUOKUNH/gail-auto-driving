@@ -110,12 +110,7 @@ class PPO:
             ratio = torch.exp(log_prob - old_log_prob.detach()).reshape(-1)
             adv = adv.reshape(-1)
             old_param = get_flat_params(self.policy).clone()
-            dist_entropy = torch.mean(current_dist.entropy())
             actor_loss = self.L_clip(adv, ratio, old_dist=current_dist, obs=s)
-            if self.train_param['use_entropy']:
-                actor_loss -= dist_entropy * 0.01
-            if self.train_param['l2_norm']:
-                actor_loss += self.train_param['l2_norm_weight'] * torch.mean(get_flat_params(self.policy))
             if not (torch.isnan(actor_loss) or torch.isinf(actor_loss)):
                 if not value_only:
                     self.actor_optimizer.zero_grad()
